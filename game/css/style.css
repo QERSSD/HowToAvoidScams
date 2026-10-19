@@ -133,3 +133,12 @@ html.dark .sms-row .b{background:#2a2f3a;color:#e9ecf1}
 .rv .gd{color:var(--muted);font-size:12.5px;display:block;margin-top:4px}
 .rv a{color:var(--official);font-size:12px;word-break:break-all}
 footer{color:var(--muted);font-size:11px;text-align:center;margin-top:24px;line-height:1.9}
+
+/* 与主站互跳 */
+.topbar .top-link{color:var(--brand-dark);text-decoration:none;font-size:12px;border:1px solid var(--line);
+  border-radius:20px;padding:4px 9px;white-space:nowrap;background:var(--card)}
+.topbar .top-link:hover{border-color:var(--brand);background:var(--brand-soft)}
+.topbar button{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:5px 10px;font-size:12px;color:var(--text)}
+.back-link{display:inline-block;color:var(--brand-dark);font-size:12.5px;text-decoration:none;
+  border-bottom:1px dashed currentColor;padding-bottom:1px}
+.back-link:hover{color:var(--brand);border-bottom-style:solid}

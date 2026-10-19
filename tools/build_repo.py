@@ -5,7 +5,7 @@
     book/                正文：按骗局类型分 14 个 markdown 文件
     docs/                长文与索引：案例报道总表、分篇口径
     tools/               构建脚本与中间数据
-    skill/               给 AI 用的推广 skill（生成小红书/朋友圈/微博推广文案）
+    skill/               给 AI 用的问答 skill（直接回答"这是不是骗局"）
     index.html           离线单文件应用（build_offline.py 生成后复制，GitHub Pages 直接可用）
 
 用法：依次跑 tools/parse_articles.py → tools/build_offline.py → 本脚本。
@@ -217,7 +217,7 @@ def build_readme(arts, idx, news):
 | [book/](book/) | 按 16 类分卷的正文 Markdown，每卷一篇导读 + 全部文章 + 报道链接 | 想按类系统读、想在 GitHub 上直接看 |
 | [docs/](docs/) | 目录、术语表、核实记录、案例总表、三篇长文 | 想查黑话、想核对来源、想读深度内容 |
 | [downloads/](downloads/) | PDF / EPUB / Anki 牌组 | 想放进阅读器、想打印、想每天背几张 |
-| [skill/](skill/) | 给 AI 用的推广 skill，让任意 AI 助手照着它生成小红书、朋友圈、微博等平台的推广文案 | 想让 AI 帮忙写推广内容、扩大这本书的传播 |
+| [skill/](skill/) | 给 AI 用的**问答** skill：判断是不是骗局、已经转钱怎么止损、借卡有没有事、怎么劝家里人 | 想直接问 AI"这能不能信"、想让助手按统一口径回答 |
 
 ### 1. 离线单文件应用（人间防骗指南.html）——主力入口
 
@@ -367,8 +367,8 @@ def build_readme(arts, idx, news):
 ├── game/                   小游戏《别被骗了啊》（12 局，局中不解析）
 │   ├── index.html          入口，双击即玩
 │   ├── css/style.css       样式（含深色模式）
-│   └── js/data.js, game.js 事件数据 + 游戏逻辑
-├── skill/                  给 AI 用的推广 skill（小红书 / 朋友圈 / 微博模板）
+│   └── js/                 事件数据、每选项回应、游戏逻辑
+├── skill/                  给 AI 用的问答 skill（判定 + 处置 + 分人群）
 ├── book/                   正文，按骗局类型分 16 卷
 ├── docs/
 │   ├── 目录.md             全书目录（{n} 篇，带编号与风险标注）
@@ -406,7 +406,13 @@ python tools/build_downloads.py   # → downloads/：PDF / EPUB / Anki（依赖 
 
 `selfcheck.html` 的题库是人工维护的，不参与自动构建。原始素材文件在本地维护、不随仓库公开；仓库里没有在线构建流程，更新产物的方式就是本地跑完上面五个脚本后 `git push`。
 
-`skill/` 目录里是一个可以直接给 AI 用的推广 skill：把 [skill/推广指南/SKILL.md](skill/推广指南/SKILL.md) 的内容发给任意 AI 助手（或放进它的 skills 目录），它就能照着规范帮你写小红书笔记、朋友圈文案、微博帖等推广内容，不用你解释项目背景。
+`skill/` 目录里是一个可以直接回答问题的防骗 skill：[skill/防骗问答/SKILL.md](skill/防骗问答/SKILL.md)。
+
+它不是一个纯索引，而是把答案本身写了进去：**三秒四问判断法、16 类骗局速查（开场→破绽→唯一正确动作）、20 个高频问题的现成回答（已转钱、给了验证码、借卡、家人被骗……）、帮信罪红线、止付时间轴、四套回答模板**。
+
+用法二选一：
+1. 直接把这个文件的内容发给任意 AI 助手，问它"有人让我先垫 100 做任务，能信吗"，它会按同一套口径回答；
+2. 放进 AI 的 skills 目录（如 `~/.workbuddy/skills/fangpian-qa/SKILL.md`），之后凡是防骗问题都会自动走这个技能。
 
 在仓库 Settings → Pages 选择 `main` 分支根目录，就能把 `index.html` 变成在线版，`downloads/` 里的 PDF / EPUB / Anki 也会同时获得直链。
 

@@ -22,3 +22,6 @@ Thumbs.db
 
 # 游戏设计与构建工作区（本地保留，正式产物在 game/）
 game-adaptations/
+
+# 本地评审用的思维导图
+mindmap.html

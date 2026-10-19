@@ -65,6 +65,10 @@ svg{fill:currentColor}
 .search kbd{position:absolute;right:9px;font-size:11px;color:var(--t3);border:1px solid var(--divider);
   border-radius:4px;padding:0 5px;line-height:16px;background:var(--bg)}
 .nav-r{display:flex;align-items:center;gap:6px}
+.nav-game{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 11px;border-radius:16px;
+  background:var(--brand);color:#fff;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+.nav-game:hover{opacity:.88;color:#fff}
+.nav-game .ico{font-size:14px;line-height:1}
 .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;
   background:transparent;border-radius:8px;color:var(--t2)}
 .icon-btn:hover{background:var(--bg-soft);color:var(--brand-t)}
@@ -96,6 +100,8 @@ html.dark .switch .moon{display:block}
   .backdrop{position:fixed;inset:0;top:var(--nav-h);background:rgba(0,0,0,.45);z-index:50;opacity:0;
     pointer-events:none;transition:opacity .25s}
   .backdrop.on{opacity:1;pointer-events:auto}
+  .nav-game{padding:0;width:34px;height:34px;justify-content:center;border-radius:9px}
+  .nav-game .txt{display:none}
 }
 
 /* ---------- 左侧三级目录 ---------- */
@@ -763,6 +769,7 @@ TEMPLATE = """<!doctype html>
       <kbd>/</kbd>
     </label>
     <div class="nav-r">
+      <a class="nav-game" href="game/" title="玩一局《别被骗了啊》：12 个真实骗局，看你顶住几局"><span class="ico">🎮</span><span class="txt">玩一局</span></a>
       <button class="icon-btn" id="rand" title="随机翻一篇" aria-label="随机翻一篇">@@DICE@@</button>
       <button class="switch" id="theme" aria-label="切换深色模式" title="切换深色模式"><span class="knob">@@SUN@@@@MOON@@</span></button>
     </div>
@@ -785,6 +792,7 @@ TEMPLATE = """<!doctype html>
         <div class="doc-links"><b>下载</b>：<a href="downloads/人间防骗指南.pdf">PDF</a> · <a href="downloads/人间防骗指南.epub">EPUB</a> · <a href="index.html">离线单文件（HTML）</a> · <a href="downloads/人间防骗指南.apkg">Anki 牌组</a></div>
         <div class="doc-links"><b>查阅</b>：<a href="docs/目录.md">目录</a> · <a href="docs/术语表.md">术语表</a> · <a href="docs/核实记录.md">核实记录</a> · <a href="docs/案例与报道.md">案例与报道</a></div>
         <div class="doc-links"><b>自查</b>：<a href="selfcheck.html">生活自查</a>——回答 45 道是否题，看看哪些事你还没做到、先做哪几件</div>
+        <div class="doc-links"><b>玩一局</b>：<a href="game/">《别被骗了啊》</a>——12 个真实骗局改编的聊天式模拟，你只有 1 万块，局中不给答案，走完才复盘；每个选项都有自己的下场</div>
         <div class="doc-links"><b>长文</b>：<a href="docs/长文-骗子的五板斧.md">骗子的五板斧</a> · <a href="docs/长文-帮信罪红线.md">帮信罪红线</a> · <a href="docs/长文-给爸妈的守卫手册.md">给爸妈的守卫手册</a></div>
         <div class="rules">
           <div class="rule"><b>① 陌生链接不点、验证码不给</b><span>验证码是最后一道锁。真客服永远不会要你的验证码，也不会让你下载远程控制软件。</span></div>
