@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>生活自查 · 人间防骗指南</title>
+<style>
+:root{
+  --brand-1:#b4272e; --brand-2:#d64b4b; --bg:#ffffff; --bg-elv:#f6f6f7; --bg-soft:#f2f3f5;
+  --t1:#1f2329; --t2:#4e5969; --t3:#86909c; --divider:#e5e6eb; --ok:#2e7d32; --warn-bg:#fff7e8; --ok-bg:#eef7ee;
+}
+@media (prefers-color-scheme: dark){ :root:not(.light){
+  --brand-1:#e56464; --brand-2:#f0883a; --bg:#17181c; --bg-elv:#1e2026; --bg-soft:#26282f;
+  --t1:#e8eaed; --t2:#b4bac4; --t3:#7d8590; --divider:#33363d; --ok:#6fbf73; --warn-bg:#3a3220; --ok-bg:#203124;
+}}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+     background:var(--bg);color:var(--t1);line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:28px 18px 80px}
+header h1{font-size:26px;margin:0 0 6px}
+header h1 em{color:var(--brand-1);font-style:normal}
+header p{color:var(--t2);margin:0 0 14px;font-size:14.5px}
+.bar{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--divider);
+     padding:10px 0;margin-bottom:18px}
+.bar-in{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.prog{flex:1;min-width:200px;height:10px;background:var(--bg-soft);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand-1),var(--brand-2));
+        border-radius:99px;transition:width .4s}
+.stat{font-size:13px;color:var(--t2);white-space:nowrap}
+.stat b{color:var(--brand-1);font-size:16px}
+button{font:inherit;cursor:pointer;border:1px solid var(--divider);background:var(--bg-elv);color:var(--t1);
+       border-radius:8px;padding:5px 12px;font-size:13px}
+button:hover{border-color:var(--brand-1);color:var(--brand-1)}
+.btn-main{background:var(--brand-1);border-color:var(--brand-1);color:#fff;font-weight:600}
+.btn-main:hover{color:#fff;opacity:.9}
+.grp{margin:26px 0 10px;display:flex;align-items:baseline;gap:10px}
+.grp h2{font-size:17px;margin:0}
+.grp .gd{font-size:12.5px;color:var(--t3)}
+.q{border:1px solid var(--divider);border-radius:12px;background:var(--bg);padding:13px 16px;margin:10px 0;
+    display:flex;gap:14px;align-items:flex-start;transition:border-color .2s}
+.q.yes{border-color:transparent;background:var(--ok-bg)}
+.q.no{border-color:transparent;background:var(--warn-bg)}
+.q .qt{flex:1;font-size:14.5px}
+.q .qt small{display:block;color:var(--t3);font-size:12.5px;margin-top:3px;line-height:1.6}
+.q .qt a{color:var(--brand-1);text-decoration:none;font-size:12.5px}
+.q .qt a:hover{text-decoration:underline}
+.opts{display:flex;gap:8px;flex-shrink:0;padding-top:2px}
+.opt{width:52px;text-align:center;border:1px solid var(--divider);border-radius:8px;padding:4px 0;
+      font-size:13px;background:var(--bg-elv);color:var(--t2);user-select:none;cursor:pointer}
+.q[data-v="yes"] .opt-yes{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
+.q[data-v="no"]  .opt-no {background:#c77800;border-color:#c77800;color:#fff;font-weight:700}
+#result{margin-top:34px;border:1px solid var(--divider);border-radius:14px;background:var(--bg-elv);padding:20px 22px}
+#result h2{margin:0 0 4px;font-size:19px}
+#result .sub{color:var(--t2);font-size:13.5px;margin-bottom:14px}
+.todo{background:var(--bg);border:1px solid var(--divider);border-left:4px solid var(--brand-1);border-radius:10px;
+      padding:10px 14px;margin:8px 0}
+.todo b{font-size:14.5px}
+.todo .why{color:var(--t2);font-size:13px;margin-top:2px}
+.todo a{color:var(--brand-1);font-size:12.5px;text-decoration:none}
+.todo a:hover{text-decoration:underline}
+.gbars{margin:14px 0 4px}
+.gbar{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+.gbar .gl{width:130px;color:var(--t2);flex-shrink:0}
+.gbar .gb{flex:1;height:8px;background:var(--bg-soft);border-radius:99px;overflow:hidden}
+.gbar .gb i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.gbar .gn{width:56px;color:var(--t3);text-align:right}
+.foot{margin-top:26px;color:var(--t3);font-size:12.5px;line-height:1.8}
+.foot a{color:var(--brand-1);text-decoration:none}
+@media (max-width:560px){ .q{flex-direction:column;gap:8px} .opts{align-self:flex-end} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>生活自查 · <em>人间防骗指南</em></h1>
+  <p><span id="qn">45</span> 道是否题，看看书里哪些事你还没做到。没有标准答案的焦虑，只有能落地的动作——答完告诉你先做哪几件。</p>
+</header>
+
+<div class="bar"><div class="bar-in">
+  <div class="prog"><i id="pi"></i></div>
+  <div class="stat">已做到 <b id="done">0</b> / <span id="total">48</span></div>
+  <button id="reset">重新开始</button>
+  <button id="goApp" onclick="location.href='人间防骗指南.html'">打开指南 ↗</button>
+</div></div>
+
+<div id="qs"></div>
+
+<div id="result" hidden>
+  <h2 id="r-title"></h2>
+  <div class="sub" id="r-sub"></div>
+  <div id="r-todos"></div>
+  <div class="gbars" id="r-bars"></div>
+</div>
+
+<div class="foot">
+  进度自动保存在本机浏览器（localStorage），不上传任何数据。<br>
+  关联拆解编号与 <a href="人间防骗指南.html">离线单文件应用</a>、PDF / EPUB 书签、Anki 卡片一致；黑话见 <a href="docs/术语表.md">术语表</a>，案例来源见 <a href="docs/核实记录.md">核实记录</a>。
+</div>
+</div>
+
+<script>
+const G = [
+ ["🆘","反诈装备","国家发的装备先装上",328],
+ ["🔐","账号与设备","最后一道闸门握在自己手里",9],
+ ["💳","资金与银行卡","别让自己的账户替骗子干活",2],
+ ["🧓","家人防线","骗子专挑家里最不设防的人",12],
+ ["📵","信息与电话习惯","少泄露一条，少中一招",180],
+ ["💼","兼职与求职","找工作本身不该花一分钱",11],
+ ["💕","感情与社交","谈钱的时候感情就到头了",231],
+ ["🎫","生活缴费票务","骗的是生活流水",320],
+];
+const Q = [
+ // g(组下标), 题目, 优先级1-3(1=先做), 关联文章, 为什么重要
+ [0,"手机装了「国家反诈中心」App，并开启了来电预警",1,328,"它是唯一能提前拦住诈骗电话的系统级装备，装完记得授权全部权限，否则预警形同虚设。"],
+ [0,"知道 96110 打来一定要接、12381 的预警短信要当真",1,327,"这两个号码只做反诈预警劝阻，接到时说明你或家人正在被骗子接触，挂掉它就是挂掉止损机会。"],
+ [0,"知道被骗后第一步是拨打 110/96110 紧急止付，而不是先去翻聊天记录",1,327,"黄金半小时内止付，钱还有机会冻结在半路；超过时间，资金进了水房就追不回来了。"],
+ [0,"能背出「三不一多」：不轻信、不透露、不转账、多核实",2,329,"十一句口诀覆盖八成骗局的开场白，记熟了等于给全家装了个过滤器。"],
+ [0,"知道「凡是自称公检法要求转账到安全账户的，都是诈骗」",1,331,"真警察不电话办案、不发 QQ 通缉令、更没有「安全账户」——这一条老人尤其要会背。"],
+
+ [1,"支付软件开了指纹/人脸验证，密码不含生日和手机号",2,9,"盗号后的第一道损失闸门就是支付密码；生日和手机号是黑产最先试的组合。"],
+ [1,"微信/QQ 开启了账号保护（设备锁、登录验证）",2,9,"账号被盗后冒充你向亲友借钱，是成本最低、成功率最高的诈骗之一。"],
+ [1,"收到「ETC 停用」「医保卡停用」类短信从不点链接，官方业务自己输官网",1,334,"钓鱼链接是民生骗局的第一步；官网手动输入这一步，能挡掉几乎全部假页面。"],
+ [1,"任何人（含「客服」「警官」）要求开屏幕共享 / FaceTime，一律拒绝",1,332,"屏幕一共享，密码验证码全部直播；退出时必须点「停止共享」而不是挂电话。"],
+ [1,"短信验证码从不告诉任何人，也知道正规客服永远不会索取验证码",1,333,"验证码是资金最后一道门；「客服」开口要验证码的那一刻，就可以确定是骗子。"],
+ [1,"不在陌生链接/二维码里填过身份证、银行卡、人脸信息",1,229,"填一次，你的信息就进了黑产数据库，后续的精准诈骗都有它的功劳。"],
+
+ [2,"名下的银行卡、电话卡、收款码从没出租、出借、卖过",1,2,"出租银行卡不是赚外快，是替电诈赃款过路——帮信罪起步就是刑事案底，还会进 5 年断卡惩戒名单。"],
+ [2,"没帮别人「代收款」「走流水」赚过佣金",1,2,"这就是跑分：流水进了你的卡，警车就来敲你的门。"],
+ [2,"给银行卡设了单日转账限额",2,9,"限额不能防骗，但能决定你被骗时损失的是五万还是五十万。"],
+ [2,"转账前有「延时到账 + 回拨核实」的习惯",2,327,"24 小时延时到账是唯一能反悔的窗口；回拨官方号码核实，能识破几乎所有冒充类骗局。"],
+ [2,"没用过来路不明的「低价慢充」话费/会员充值",2,13,"慢充的低价，大概率是黑产在拿你的号码洗赃款，充进去的钱可能牵连进案件。"],
+
+ [3,"家里老人手机装了反诈 App，并关掉了「陌生来电免打扰」",1,12,"老人是被精准围猎的一群：反诈 App 的预警拦截对他们最有效。"],
+ [3,"和家里老人聊过最近的高发骗局（保健品、收藏品、养老项目、冒充子女）",2,12,"骗局更新很快，一年前聊过的可能已经过时；经常聊，老人遇事才会先想起问你。"],
+ [3,"和爸妈约过「家里暗号」——遇到「孩子出事急需用钱」先对暗号",1,12,"冒充子女、冒充孙辈出事的骗局专攻隔代亲情，一个暗号就能当场拆穿。"],
+ [3,"提醒过家里老人：凡是「高息存款」「养老床位」「原始股」一律不碰",2,12,"养老诈骗的终点几乎都是本金归零，且受害者常常瞒着家人不肯报案。"],
+ [3,"家里老人的大额转账，家人之间有互相知会的习惯",2,12,"骗子最怕的是「我要问问孩子」——这句话能吓退绝大多数针对老人的骗局。"],
+
+ [4,"快递面单撕毁或涂抹后再扔",3,220,"一张面单在黑市卖 5 毛钱：姓名、电话、住址齐了，精准诈骗的原料就凑齐了。"],
+ [4,"不参与「扫码领鸡蛋/纸巾/礼品」类地推活动",2,89,"礼品的成本，就是你扫码交出去的个人信息，甚至一个木马 App。"],
+ [4,"朋友圈不晒机票、证件、孩子学校等敏感信息",3,180,"晒出来的每一条都在给黑产补全你的画像，退改签骗局能报出你的座位号不是偶然。"],
+ [4,"接到自称客服/航司/银行的电话，会主动挂断后回拨官方号码核实",1,320,"来电显示可以伪造，回拨官方号码是唯一可信的核实方式。"],
+ [4,"知道「一证通查」能查名下所有电话卡，并查过一次",2,328,"你名下可能躺着不是你办的卡——它们也许正在替骗子接验证码。"],
+ [4,"用「一键查卡」查过名下银行卡，异常卡及时处理",2,328,"和电话卡同理：查一次只要两分钟，出事就是刑责。"],
+
+ [5,"求职从没交过「押金」「服装费」「培训费」",1,11,"正规招聘不收一分钱；先交钱的「机会」本身就是生意。"],
+ [5,"遇到「先垫付后返款」的兼职能立刻判断是骗局",1,89,"垫付是刷单收网的信号词：前几单返利是饵，大单垫付是钩。"],
+ [5,"没在非官方渠道下载过 App / 软件安装包",2,79,"「免费资源」「无删减」的安装包，很多是木马：删掉软件，木马还在。"],
+ [5,"简历只投正规平台，知道简历在黑市是按条卖的",3,180,"简历倒卖是精准诈骗的上游：你投出的每一份简历，都可能多卖一手。"],
+ [5,"警惕「高薪海外工作」类招聘，知道缅北园区不是逆袭是地狱",2,23,"所谓高薪offer的终点可能是境外园区的铁丝网——这不是段子，是几百篇口供的共识。"],
+
+ [6,"网恋对象从没引导你投资、充值、买虚拟币",1,231,"感情建立得越快、要钱越巧，杀猪盘的嫌疑越大：突如其来的缘分，多半是精心设计的狩猎。"],
+ [6,"不加入「荐股群」「带单群」「内幕消息群」",1,71,"群里除了你全是托：老师、学员、晒收益的，都是同一伙人开的号。"],
+ [6,"知道视频里的「熟人」也可能是 AI 换脸，借钱必须电话/当面核实",1,229,"AI 换脸+语音克隆已能骗过肉眼和亲妈；大额转账前，见到本人再说。"],
+ [6,"不点陌生「网友」发来的链接、文件、App 安装包",2,79,"裸聊敲诈和木马盗号的第一步，都是你点开的那个文件。"],
+ [6,"遇到「裸聊」诱惑知道是录屏敲诈，直接拉黑报警",2,245,"对面不是美女是抠脚汉+录屏软件，你一旦露脸，敲诈才刚刚开始；删视频交钱都是谎言。"],
+
+ [7,"接到「航班取消/改签」电话，会先去航司 App 自查而不是按对方说的操作",1,320,"骗子能报出你的姓名座位号（信息早被卖光了），但航司 App 里的行程状态骗不了人。"],
+ [7,"「快递丢失双倍理赔」类电话，一律挂断后用官方 App 查",1,321,"真理赔不需要你开屏幕共享、不需要你先转账验证。"],
+ [7,"收到不明快递里的「蟹卡/提货券/刮刮卡」直接扔掉",1,322,"天上掉的卡，是刷单诈骗的新马甲：扫码进群的那一刻，剧本就开场了。"],
+ [7,"演唱会门票只在官方平台买，不找「代抢」「内部渠道」",2,320,"假黄牛收完定金就拉黑；「内部票」三个字本身就是骗局说明书。"],
+ [7,"知道微信「百万保障」是免费的，「取消扣费」的都是骗子",1,320,"百万保障本是平台赠送的免费服务，所有「到期扣费」话术都是诈骗开场白。"],
+ [7,"「注销校园贷账户否则影响征信」类电话，一律当作诈骗",1,335,"征信由央行统一管理，没有「注销账户」一说，更不存在花钱洗白。"],
+ [7,"「征信修复」「征信洗白」类广告从不相信",1,334,"逾期记录还清后 5 年自动消除，花钱改不了；伪造证明去申诉，还可能把自己变成嫌疑人。"],
+ [7,"培训机构「退费红头文件」让你先买理财/先垫付的，一律不理",2,326,"真退费原路退回，假退费引你进群刷单——红头文件可以 P，你的本金是真的。"],
+];
+
+const $=s=>document.querySelector(s);
+const KEY='fangpian-selfcheck-v1';
+let state={};
+const store=(()=>{try{localStorage.setItem('t','1');localStorage.removeItem('t');return localStorage}
+  catch(e){let m={};return{getItem:k=>m[k]||null,setItem:(k,v)=>{m[k]=v},removeItem:k=>{delete m[k]}}}})();
+try{state=JSON.parse(store.getItem(KEY)||'{}')}catch(e){}
+
+function save(){try{store.setItem(KEY,JSON.stringify(state))}catch(e){}}
+
+function render(){
+  const qs=$('#qs');
+  qs.innerHTML=G.map((g,gi)=>{
+    const items=Q.map((q,qi)=>[q,qi]).filter(([q])=>q[0]===gi);
+    return '<div class="grp"><h2>'+g[0]+' '+g[1]+'</h2><span class="gd">'+g[2]+' · '+items.length+' 题</span></div>'+
+      items.map(([q,qi])=>qHtml(q,qi)).join('');
+  }).join('');
+  document.querySelectorAll('.q .opt').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const i=+b.closest('.q').dataset.i, v=b.dataset.v;
+      if(state[i]===v) delete state[i]; else state[i]=v;
+      save();render();
+    });
+  });
+  tally();
+}
+function qHtml(q,i){
+  const v=state[i]||'';
+  return '<div class="q '+v+'" data-i="'+i+'" data-v="'+v+'"><div class="qt">'+q[1]+
+    '<small>'+q[4]+'</small>'+
+    (q[3]?'<a href="人间防骗指南.html#p'+q[3]+'" title="编号 '+q[3]+'">看完整拆解 →</a>':'')+
+    '</div><div class="opts">'+
+    '<span class="opt opt-yes" data-v="yes">✓ 做到</span>'+
+    '<span class="opt opt-no" data-v="no">✗ 没有</span></div></div>';
+}
+function tally(){
+  const answered=Object.keys(state).length;
+  const yes=Object.values(state).filter(v=>v==='yes').length;
+  $('#done').textContent=yes;
+  $('#total').textContent=Q.length;
+  $('#pi').style.width=(yes/Q.length*100)+'%';
+  const R=$('#result');
+  if(answered>=10){R.hidden=false;renderResult(yes)}else{R.hidden=true}
+}
+function renderResult(yes){
+  const pct=yes/Q.length;
+  $('#r-title').textContent = pct>=.8?'防线基本牢固，保持警惕':
+    pct>=.5?'过了一半，还有关键缺口':'漏洞不少，先补最要命的几件';
+  $('#r-sub').textContent='已做到 '+yes+' / '+Q.length+' 项，答完 '+Object.keys(state).length+' 题。下面按优先级列出你还没做到、且最要命的动作：';
+  const todos=Q.map((q,i)=>({q,i})).filter(x=>state[x.i]==='no'&&x.q[2]===1)
+    .concat(Q.map((q,i)=>({q,i})).filter(x=>state[x.i]==='no'&&x.q[2]===2).slice(0,3))
+    .slice(0,8);
+  $('#r-todos').innerHTML = todos.length? todos.map(x=>
+    '<div class="todo"><b>'+x.q[1]+'</b><div class="why">'+x.q[4]+'</div>'+
+    (x.q[3]?'<a href="人间防骗指南.html#p'+x.q[3]+'">看完整拆解 →</a>':'')+'</div>').join('')
+    : '<div class="todo"><b>没有高危缺口 🎉</b><div class="why">优先级最高的几项你都做到了——继续保持，并把这套题发给家人做一遍。</div></div>';
+  const bars=G.map((g,gi)=>{
+    const items=Q.map((q,i)=>({q,i})).filter(x=>x.q[0]===gi);
+    const y=items.filter(x=>state[x.i]==='yes').length;
+    const pc=items.length?Math.round(y/items.length*100):0;
+    return '<div class="gbar"><span class="gl">'+g[0]+' '+g[1]+'</span><span class="gb"><i style="width:'+pc+'%"></i></span><span class="gn">'+y+'/'+items.length+'</span></div>';
+  }).join('');
+  $('#r-bars').innerHTML='<div style="font-weight:600;margin-bottom:4px">各板块完成度</div>'+bars;
+}
+$('#reset').addEventListener('click',()=>{state={};save();render()});
+$('#qn').textContent=Q.length;
+$('#total').textContent=Q.length;
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# 原始素材：不公开，本地维护，只改这一个文件
+人间防骗指南.md
+
+# 给 AI 看的上下文文件：本地使用，不入库
+AI-CONTEXT.md
+AI-README.md
+
+# 参考用的他人仓库快照
+HowToLiveBetter.html
+HowToMakeWorkPay.html
+
+# 构建中间产物与缓存
+__pycache__/
+*.pyc
+tools/_*.js
+tools/_*.json
+
+# 本地工作区数据
+.workbuddy/
+.DS_Store
+Thumbs.db

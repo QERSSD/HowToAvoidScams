@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{background:#ffffff}
+  .canvas{
+    position:relative;width:1200px;height:630px;overflow:hidden;
+    display:flex;flex-direction:column;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    color:#213547;
+  }
+  /* 细网格背景 */
+  .grid{
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(60,60,67,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(60,60,67,.045) 1px, transparent 1px);
+    background-size:42px 42px;
+  }
+  /* 光晕（超出部分被 .canvas 裁剪） */
+  .glow{position:absolute;border-radius:50%}
+  .g1{width:560px;height:560px;right:-160px;top:120px;
+      background:radial-gradient(circle,rgba(66,184,131,.16),rgba(66,184,131,0) 68%)}
+  .g2{width:520px;height:520px;right:-60px;bottom:-260px;
+      background:radial-gradient(circle,rgba(52,81,178,.12),rgba(52,81,178,0) 68%)}
+  /* 顶部渐变条 */
+  .topbar{position:absolute;top:0;left:0;right:0;height:7px;
+      background:linear-gradient(90deg,#35a872,#42b883 45%,#3451b2)}
+  .wrap{position:relative;flex:1;padding:78px 84px 0}
+  .brand{display:flex;align-items:center;gap:16px}
+  .logo{width:54px;height:54px;border-radius:14px;
+      background:linear-gradient(135deg,#42b883,#36986a);
+      display:grid;place-items:center;box-shadow:0 6px 16px rgba(66,184,131,.32)}
+  .logo svg{width:30px;height:30px}
+  .brand-t{font-size:24px;font-weight:600;color:rgba(60,60,67,.72);letter-spacing:.02em}
+  h1{margin-top:46px;font-size:74px;line-height:1.18;font-weight:800;letter-spacing:-.01em}
+  h1 .g{color:#35a872}
+  .sub{margin-top:30px;font-size:28px;font-weight:500;color:rgba(60,60,67,.6);letter-spacing:.01em}
+  .pills{display:flex;gap:18px;margin:0 84px 66px;flex:none}
+  .pill{height:54px;display:flex;align-items:center;padding:0 26px;border-radius:27px;
+      background:#fff;border:1px solid #e2e2e3;font-size:23px;font-weight:600;color:#213547;
+      box-shadow:0 2px 6px rgba(0,0,0,.04)}
+  .pill.hl{background:#e6f9ef;border-color:#b8e8cf;color:#1a7f4b}
+</style>
+</head>
+<body>
+  <div class="canvas">
+    <div class="grid"></div>
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <div class="topbar"></div>
+    <div class="wrap">
+      <div class="brand">
+        <span class="logo">
+          <svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-t">人间防骗指南</span>
+      </div>
+      <h1>364 个骗局，逐个拆开，<br><span class="g">护住钱、账号和自由</span></h1>
+      <div class="sub">刷单 · 洗钱跑分 · 杀猪盘 · 冒充公检法 · AI 换脸 · 套路贷 · 虚假投资</div>
+    </div>
+    <div class="pills">
+      <span class="pill">364 篇拆解</span>
+      <span class="pill hl">120 条权威报道</span>
+      <span class="pill">312 页 PDF</span>
+      <span class="pill">离线可用</span>
+    </div>
+  </div>
+</body>
+</html>
