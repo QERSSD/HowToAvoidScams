@@ -1,0 +1,135 @@
+:root{
+  --brand:#42b883; --brand-soft:#e7f6ef; --brand-dark:#2f8f66;
+  --danger:#e5484d; --danger-soft:#fdeeee; --official:#3b82f6;
+  --bg:#f2f3f5; --card:#fff; --text:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+  --wx:#95ec69; --wx-bubble:#fff;
+}
+html.dark{
+  --bg:#0f1115; --card:#1a1d24; --text:#e9ecf1; --muted:#9aa3b2; --line:#2a2f3a;
+  --brand-soft:#15392b; --danger-soft:#3a2224; --wx:#2f6b3f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  margin:0;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:480px;padding:0 12px 40px;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+
+/* 顶部 */
+.topbar{position:sticky;top:0;z-index:10;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:9px 12px;margin:10px 0;display:flex;gap:8px;font-size:13px;
+  align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.topbar b{font-variant-numeric:tabular-nums}
+#themeBtn{border:1px solid var(--line);background:var(--card);color:var(--text);
+  border-radius:20px;padding:5px 10px;font-size:12px}
+#progress{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin:8px 0}
+#progress i{display:block;height:100%;background:var(--brand);transition:width .3s}
+
+/* 卡片 */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0;
+  box-shadow:0 2px 12px rgba(0,0,0,.05)}
+
+/* 开始页 */
+.start-hero{text-align:center;padding:30px 10px 10px}
+.start-hero h1{font-size:26px;margin:0 0 6px}
+.start-hero .sub{color:var(--muted);font-size:13px;line-height:1.8;margin:0}
+.identity-card{background:var(--card);border:1.5px solid var(--brand);border-radius:16px;
+  padding:14px;margin:14px 0;text-align:center}
+.identity-card .emoji{font-size:38px}
+.identity-card .name{font-weight:800;font-size:16px;margin:4px 0}
+.identity-card .desc{color:var(--muted);font-size:12px;line-height:1.7}
+
+/* 身份选择网格 */
+.idgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.idcard{background:var(--card);border:1.5px solid var(--line);border-radius:14px;
+  padding:12px 8px;cursor:pointer;text-align:center;transition:all .15s}
+.idcard:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:0 6px 16px rgba(66,184,131,.18)}
+.idcard .emoji{font-size:30px}
+.idcard .name{font-weight:800;font-size:14px;margin:4px 0 2px}
+.idcard .desc{color:var(--muted);font-size:11px;line-height:1.5}
+
+/* 通用场景头 */
+.scene-head{display:flex;align-items:center;gap:8px;padding:8px 4px;
+  border-bottom:1px dashed var(--line);margin-bottom:8px}
+.scene-head .ch{background:var(--brand-soft);color:var(--brand-dark);border-radius:8px;
+  padding:3px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.scene-head .meta{color:var(--muted);font-size:12px;flex:1;line-height:1.4}
+
+/* 微信聊天气泡 */
+.wx{background:#ededed;border-radius:10px;padding:10px;margin:8px 0;max-height:440px;overflow:hidden}
+html.dark .wx{background:#15181e}
+.wx-row{display:flex;gap:8px;margin:10px 0;align-items:flex-start}
+.wx-row .avatar{width:34px;height:34px;border-radius:4px;flex:none;display:grid;place-items:center;
+  font-size:18px;background:#fff;color:#333}
+.wx-row.me{flex-direction:row-reverse}
+.wx-bubble{max-width:70%;padding:9px 11px;background:var(--wx-bubble);border-radius:4px;
+  font-size:14.5px;line-height:1.65;position:relative}
+html.dark .wx-bubble{background:#2a2f3a;color:#e9ecf1}
+.wx-row.me .wx-bubble{background:var(--wx);color:#000}
+.wx-row .name{font-size:11px;color:#888;margin-bottom:3px}
+
+/* 来电界面 */
+.call{background:linear-gradient(160deg,#2c3e50,#1a2530);color:#fff;border-radius:14px;
+  padding:24px 18px;margin:10px 0;text-align:center}
+.call .num{font-size:22px;font-weight:700;margin:8px 0;font-variant-numeric:tabular-nums}
+.call .from{font-size:13px;color:#cfd8e3}
+.call .danger-tag{display:inline-block;background:#e74c3c;color:#fff;font-size:11px;
+  padding:2px 8px;border-radius:4px;margin-top:6px}
+
+/* 短信界面 */
+.sms{background:#f5f5f5;border-radius:10px;padding:10px;margin:8px 0}
+html.dark .sms{background:#15181e}
+.sms-row{margin:8px 0;font-size:14.5px;line-height:1.6}
+.sms-row .who{font-size:11px;color:#888;margin-bottom:2px}
+.sms-row .b{background:#fff;border-radius:8px;padding:8px 11px;display:inline-block;max-width:92%}
+html.dark .sms-row .b{background:#2a2f3a;color:#e9ecf1}
+
+/* 直播间 */
+.live{background:#1a1a1a;color:#fff;border-radius:12px;padding:12px;margin:8px 0}
+.live .room{font-size:13px;color:#ff5b5b;font-weight:700}
+.live .host{font-size:14px;line-height:1.6;background:rgba(255,255,255,.08);padding:8px 10px;
+  border-radius:6px;margin:6px 0}
+.live .danmu{font-size:12px;color:#cfd8e3;line-height:1.9;margin-top:6px}
+.live .danmu span{display:inline-block;margin-right:8px}
+
+/* 聊天窗口布局 */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 60px);max-width:480px;margin:0 auto}
+.chat-msgs{flex:1;overflow-y:auto;padding:10px 4px;scroll-behavior:smooth}
+.chat-msgs::-webkit-scrollbar{width:4px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+.chat-bar{padding:10px 4px 14px;border-top:1px solid var(--line);background:var(--bg)}
+.chat-bar .btn{margin:6px 0;font-size:14px;padding:11px 13px}
+/* 自己发的气泡（绿色右对齐） */
+.wx-row.me .wx-bubble{background:var(--brand);color:#fff}
+.wx-row.me .avatar{background:var(--brand);color:#fff}
+.btn{display:block;width:100%;text-align:left;padding:12px 14px;margin:8px 0;font-size:14.5px;
+  line-height:1.55;border-radius:12px;border:1.5px solid var(--line);background:var(--card);
+  color:var(--text);transition:all .15s}
+.btn:hover{border-color:var(--brand);background:var(--brand-soft)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.btn:disabled{opacity:.5}
+
+/* 后果提示（只显示后果，不显示对错） */
+.aftermath{margin-top:10px;padding:12px;border-radius:10px;background:var(--bg);
+  border-left:3px solid var(--muted);font-size:14px;line-height:1.75}
+.aftermath.bad{border-left-color:var(--danger);background:var(--danger-soft)}
+.aftermath.good{border-left-color:var(--brand);background:var(--brand-soft)}
+.float{position:fixed;left:50%;transform:translateX(-50%);top:70px;font-weight:800;font-size:17px;
+  animation:fu 1.3s ease forwards;z-index:99;pointer-events:none}
+@keyframes fu{to{transform:translate(-50%,-50px);opacity:0}}
+
+/* 结局 & 复盘 */
+.badge{display:inline-block;padding:8px 20px;border-radius:12px;font-weight:800;font-size:18px;
+  background:var(--brand);color:#fff;margin:6px 0}
+.badge.bad{background:var(--danger)} .badge.warn{background:#d97706}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 4px;text-align:center}
+.kpi b{display:block;font-size:15px}
+.kpi span{color:var(--muted);font-size:11px}
+.rv{border-left:3px solid var(--line);background:var(--card);border-radius:0 10px 10px 0;
+  padding:11px 13px;margin:10px 0;font-size:13.5px;line-height:1.75}
+.rv.bad{border-left-color:var(--danger)}
+.rv .ok{color:var(--brand);font-weight:700}
+.rv .no{color:var(--danger);font-weight:700}
+.rv .gd{color:var(--muted);font-size:12.5px;display:block;margin-top:4px}
+.rv a{color:var(--official);font-size:12px;word-break:break-all}
+footer{color:var(--muted);font-size:11px;text-align:center;margin-top:24px;line-height:1.9}
