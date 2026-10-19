@@ -5,6 +5,7 @@
     book/                正文：按骗局类型分 14 个 markdown 文件
     docs/                长文与索引：案例报道总表、分篇口径
     tools/               构建脚本与中间数据
+    skill/               给 AI 用的推广 skill（生成小红书/朋友圈/微博推广文案）
     index.html           离线单文件应用（build_offline.py 生成后复制，GitHub Pages 直接可用）
 
 用法：依次跑 tools/parse_articles.py → tools/build_offline.py → 本脚本。
@@ -214,6 +215,7 @@ def build_readme(arts, idx, news):
 | [book/](book/) | 按 16 类分卷的正文 Markdown，每卷一篇导读 + 全部文章 + 报道链接 | 想按类系统读、想在 GitHub 上直接看 |
 | [docs/](docs/) | 目录、术语表、核实记录、案例总表、三篇长文 | 想查黑话、想核对来源、想读深度内容 |
 | [downloads/](downloads/) | PDF / EPUB / Anki 牌组 | 想放进阅读器、想打印、想每天背几张 |
+| [skill/](skill/) | 给 AI 用的推广 skill，让任意 AI 助手照着它生成小红书、朋友圈、微博等平台的推广文案 | 想让 AI 帮忙写推广内容、扩大这本书的传播 |
 
 ### 1. 离线单文件应用（人间防骗指南.html）——主力入口
 
@@ -377,7 +379,9 @@ python tools/build_docs.py        # → docs/目录.md / 术语表.md / 核实�
 python tools/build_downloads.py   # → downloads/：PDF / EPUB / Anki（依赖 reportlab、genanki）
 ```
 
-`selfcheck.html` 的题库是人工维护的，不参与自动构建。原始素材文件在本地维护、不随仓库公开，因此仓库里的构建工作流只保留了手动触发（Actions → build → Run workflow）。
+`selfcheck.html` 的题库是人工维护的，不参与自动构建。原始素材文件在本地维护、不随仓库公开；仓库里没有在线构建流程，更新产物的方式就是本地跑完上面五个脚本后 `git push`。
+
+`skill/` 目录里是一个可以直接给 AI 用的推广 skill：把 [skill/推广指南/SKILL.md](skill/推广指南/SKILL.md) 的内容发给任意 AI 助手（或放进它的 skills 目录），它就能照着规范帮你写小红书笔记、朋友圈文案、微博帖等推广内容，不用你解释项目背景。
 
 在仓库 Settings → Pages 选择 `main` 分支根目录，就能把 `index.html` 变成在线版，`downloads/` 里的 PDF / EPUB / Anki 也会同时获得直链。
 
