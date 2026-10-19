@@ -789,6 +789,7 @@ TEMPLATE = """<!doctype html>
         <h1>人间防骗指南</h1>
         <p class="sub">@@N@@ 个骗局，逐个拆开：套路分几步、坑在哪、会损失什么、哪些话一听到就该挂电话。</p>
         <p class="stat">当前显示 <b id="cnt">–</b> 篇 · 共 @@N@@ 篇 · 正文 @@NROWS@@ 段 · 其中 @@NRISK@@ 篇碰了要负刑责</p>
+        <div class="doc-links"><b>在线</b>：<a href="https://qerssd.github.io/HowToAvoidScams/">网页版 qerssd.github.io/HowToAvoidScams</a> · <a href="https://qerssd.github.io/HowToAvoidScams/game/">直接玩一局</a>——手机点开就能玩，不用下载、不用装任何东西</div>
         <div class="doc-links"><b>下载</b>：<a href="downloads/人间防骗指南.pdf">PDF</a> · <a href="downloads/人间防骗指南.epub">EPUB</a> · <a href="index.html">离线单文件（HTML）</a> · <a href="downloads/人间防骗指南.apkg">Anki 牌组</a></div>
         <div class="doc-links"><b>查阅</b>：<a href="docs/目录.md">目录</a> · <a href="docs/术语表.md">术语表</a> · <a href="docs/核实记录.md">核实记录</a> · <a href="docs/案例与报道.md">案例与报道</a></div>
         <div class="doc-links"><b>自查</b>：<a href="selfcheck.html">生活自查</a>——回答 45 道是否题，看看哪些事你还没做到、先做哪几件</div>

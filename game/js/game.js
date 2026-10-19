@@ -17,7 +17,11 @@ const START_MONEY = 10000;  // 全局初始钱包，不论什么身份都只有�
 
 const S = {};
 let CUR = null;
-const BACK_URL = '../index.html';
+const ONLINE_HOME = 'https://qerssd.github.io/HowToAvoidScams/';
+const ONLINE_GAME = 'https://qerssd.github.io/HowToAvoidScams/game/';
+const IS_ONLINE = /^https?:$/.test(location.protocol) && /(^|\.)github\.io$/.test(location.hostname);
+// 线上直接回线上首页；本地双击时仍走相对路径
+const BACK_URL = IS_ONLINE ? ONLINE_HOME : '../index.html';
 
 // 每个选项的专属回应：stage 0=工具/真机会的两选项，1=正解，2=下沉局，3=加码轮
 function rp(stage, i, j){
@@ -68,6 +72,7 @@ function start(){
   <div style="text-align:center;margin-top:14px">
     <a class="back-link" href="${BACK_URL}">📖 先看《人间防骗指南》364 篇拆解</a>
   </div>
+  ${IS_ONLINE?`<div style="text-align:center;margin-top:10px;font-size:12px;color:var(--muted)">在线地址：<a href="${ONLINE_GAME}" style="color:var(--brand)">qerssd.github.io/HowToAvoidScams/game</a></div>`:''}
   <footer>取材自《人间防骗指南》<br>遇真实诈骗：110 报案 · 96110 咨询</footer>`);
 }
 

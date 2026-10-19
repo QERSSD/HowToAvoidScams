@@ -7,6 +7,7 @@
 
 | | |
 |---|---|
+| **在线** | [网页版](https://qerssd.github.io/HowToAvoidScams/) · [直接玩一局](https://qerssd.github.io/HowToAvoidScams/game/)——手机点开就能看、能玩，不用下载 |
 | **下载** | [PDF](downloads/人间防骗指南.pdf) · [EPUB](downloads/人间防骗指南.epub) · [离线单文件 HTML](人间防骗指南.html) · [Anki 牌组](downloads/人间防骗指南.apkg) |
 | **查阅** | [目录](docs/目录.md) · [术语表](docs/术语表.md) · [核实记录](docs/核实记录.md) · [案例与报道](docs/案例与报道.md) |
 | **自查** | [生活自查](selfcheck.html)：45 道是否题，看看哪些事你还没做到、先做哪几件 |
@@ -107,7 +108,7 @@
 - **会连环催**：一旦上钩，对方不会停，会一轮轮加码（「最后一单」「再交 3000 就能提现」），钱不够还递上借款链接
 - **最后算总账**：复盘按「你差在哪」排序，哪类骗局栽得最多、亏了多少，每条后面附当时正确的做法、防身金句和同类真实案例链接
 
-打开方式：点 [game/](game/) 里的 `index.html`，或者双击本地文件，不联网也能玩，手机浏览器同样能开。
+打开方式：**手机或电脑直接点 [qerssd.github.io/HowToAvoidScams/game/](https://qerssd.github.io/HowToAvoidScams/game/)** 就能玩；也可以点 [game/](game/) 里的 `index.html`，或者双击本地文件，不联网也能玩，手机浏览器同样能开。
 
 ## 怎么读（照着做就行）
 
