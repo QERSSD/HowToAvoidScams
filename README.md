@@ -276,3 +276,12 @@ python tools/build_downloads.py   # → downloads/：PDF / EPUB / Anki（依赖 
 - 每篇末尾的「相关案例与公开报道」是法院、检察、公安、央媒公开通报的**同类案例**，不是同一案件；点击可看原文。
 - 真遇到事：拨打 **110** 报案、**96110** 咨询，或通过「国家反诈中心」App 举报。
 - 详见 [docs/分篇与标注口径.md](docs/分篇与标注口径.md)。
+
+## 许可
+
+双授权，详见 [LICENSE](LICENSE)：
+
+- **文字内容**（正文 / book / docs / 自查题库）：[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)——随便转、随便改、随便发群，**注明出处、别拿去卖钱**。
+- **代码**（tools / game / 页面样式）：MIT。
+
+想做成自己的反诈页面或改编成本地话术库，直接 fork，保留版权声明即可，不用打招呼。
