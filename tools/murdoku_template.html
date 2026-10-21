@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>识骗迷局 · 把九个人摆回原位</title>
+<style>
+:root{
+  --bg:#0b1120; --bg2:#111b2e; --panel:#16223a; --panel2:#1c2a45;
+  --line:#2a3a5a; --txt:#e8eef8; --dim:#93a3bd; --dim2:#6b7c99;
+  --scam:#ff5b5b; --victim:#ffc93c; --police:#3fd0e8; --路人:#93a3bd; --road:#93a3bd;
+  --ok:#3ddc84; --cell:46px; --gap:2px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;}
+body{background:radial-gradient(1200px 600px at 50% -10%,#16233d 0%,var(--bg) 60%);min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none !important}
+
+/* ---------------- 顶栏 ---------------- */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
+  padding:10px 14px;background:rgba(11,17,32,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line)}
+.top .logo{font-weight:800;letter-spacing:1px;font-size:17px}
+.top .logo em{font-style:normal;color:var(--scam)}
+.top .sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--txt);
+  padding:7px 13px;border-radius:9px;font-size:13px;transition:.15s}
+.btn:hover{border-color:#3c587f;background:var(--panel2)}
+.btn.main{background:linear-gradient(135deg,#ff5b5b,#ff8a4c);border:none;font-weight:700}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------------- 首页 ---------------- */
+.wrap{max-width:1080px;margin:0 auto;padding:18px 14px 60px}
+.hero{border:1px solid var(--line);background:linear-gradient(135deg,#152238,#101a2d);
+  border-radius:16px;padding:20px 20px 16px;margin-bottom:18px}
+.hero h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+.hero p{margin:0;color:var(--dim);font-size:13.5px;line-height:1.75}
+.hero .rules{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#16223acc;border-radius:999px;
+  padding:5px 11px;font-size:12px;color:var(--dim)}
+.chip b{color:var(--txt);font-weight:600}
+.chap{margin:20px 0 10px;display:flex;align-items:baseline;gap:10px}
+.chap h2{margin:0;font-size:18px}
+.chap span{color:var(--dim2);font-size:12.5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:14px;
+  padding:14px;text-align:left;transition:.16s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-2px);border-color:#3c587f;background:var(--panel2)}
+.card .no{font-size:11.5px;color:var(--dim2);letter-spacing:1px}
+.card .t{font-size:16px;font-weight:700;margin:5px 0 6px}
+.card .s{font-size:12px;color:var(--dim);line-height:1.6;height:38px;overflow:hidden}
+.card .foot{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--dim2)}
+.stars{color:var(--victim);letter-spacing:2px;font-size:13px}
+.lock{position:absolute;inset:0;background:rgba(9,14,26,.72);display:flex;
+  align-items:center;justify-content:center;font-size:12.5px;color:var(--dim)}
+.stat{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--dim)}
+
+/* ---------------- 关卡页 ---------------- */
+.case{border:1px solid var(--line);border-left:3px solid var(--scam);
+  background:var(--panel);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.case .h{font-size:12px;color:var(--dim2);letter-spacing:1px;margin-bottom:6px}
+.case .c{font-size:13.5px;line-height:1.85;color:#dbe5f4}
+.case .scene{margin-top:8px;font-size:12px;color:var(--dim2)}
+.play-grid{display:grid;grid-template-columns:minmax(430px,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:900px){.play-grid{grid-template-columns:1fr}:root{--cell:38px}}
+@media (max-width:430px){:root{--cell:calc((100vw - 96px)/9)}}
+
+.boardbox{border:1px solid var(--line);background:var(--bg2);border-radius:14px;padding:12px}
+.board{display:flex;gap:4px;justify-content:center}
+.rowbar{display:grid;grid-template-rows:repeat(9,var(--cell));gap:var(--gap);padding-top:20px}
+.rowbar div,.colbar div{display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--dim2)}
+.colbar{display:grid;grid-template-columns:repeat(9,var(--cell));gap:var(--gap);height:20px}
+.grid9{display:grid;grid-template-columns:repeat(9,var(--cell));
+  grid-template-rows:repeat(9,var(--cell));gap:var(--gap)}
+.cell{position:relative;background:#141f36;border-radius:5px;display:flex;
+  align-items:center;justify-content:center;transition:background .12s,box-shadow .12s}
+.cell.zb{background:#182742}
+.cell:hover{background:#22324f}
+.cell.conflict{animation:shake .3s;box-shadow:inset 0 0 0 2px var(--scam)}
+.cell.hl{background:#22365a}
+.cell.locked{cursor:not-allowed}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.cell img{width:82%;height:82%;object-fit:contain;pointer-events:none}
+.cell .nm{position:absolute;bottom:1px;left:0;right:0;text-align:center;
+  font-size:9px;color:#0b1120;background:rgba(232,238,248,.72);border-radius:0 0 5px 5px;
+  pointer-events:none;overflow:hidden;white-space:nowrap}
+.cell .badge{position:absolute;top:1px;left:2px;font-size:8px;background:rgba(255,255,255,.18);
+  border-radius:3px;padding:0 2px;pointer-events:none;color:#cfdbee}
+.ztag{position:absolute;top:2px;left:3px;font-size:9px;color:#7d90b0;pointer-events:none;
+  background:rgba(255,255,255,.06);border-radius:3px;padding:0 3px}
+
+.side{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:12px}
+.side h3{margin:0 0 8px;font-size:13px;letter-spacing:1px;color:var(--dim)}
+.tools{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.tools .btn{padding:6px 10px;font-size:12px}
+.meta{font-size:11.5px;color:var(--dim2);display:flex;gap:10px;margin-bottom:8px}
+.clue{display:flex;gap:8px;padding:7px 8px;border-radius:9px;border:1px solid transparent;
+  font-size:12.5px;line-height:1.6;color:#d7e1f0;cursor:pointer;align-items:flex-start}
+.clue:hover{background:#1b2942}
+.clue .box{flex:none;width:15px;height:15px;border:1px solid var(--line);border-radius:4px;
+  margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ok)}
+.clue.used{color:var(--dim2)}
+.clue.used .t{text-decoration:line-through}
+.clue.used .box{border-color:var(--ok)}
+.hintbox{margin-top:8px;border:1px dashed var(--line);border-radius:9px;padding:8px 10px;
+  font-size:12px;color:#ffd98a;background:#241d10;line-height:1.7}
+
+.roster{margin-top:14px;border:1px solid var(--line);background:var(--panel);
+  border-radius:14px;padding:12px}
+.roster h3{margin:0 0 10px;font-size:13px;letter-spacing:1px;color:var(--dim)}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.p{border:1px solid var(--line);border-radius:11px;padding:8px 6px;text-align:center;
+  background:#141f36;transition:.14s;cursor:pointer;position:relative}
+.p:hover{border-color:#3c587f;transform:translateY(-2px)}
+.p img{width:44px;height:44px;object-fit:contain}
+.p .n{font-size:12.5px;font-weight:700;margin-top:2px}
+.p .d{font-size:10.5px;color:var(--dim2);line-height:1.4;margin-top:2px;height:28px;overflow:hidden}
+.p.sel{border-color:var(--police);box-shadow:0 0 0 2px rgba(63,208,232,.25)}
+.p.done{opacity:.42}
+.p .ring{position:absolute;inset:0;border-radius:11px;pointer-events:none}
+.p[data-camp="骗"] .n{color:#ff8a8a}
+.p[data-camp="受害"] .n{color:#ffd76a}
+.p[data-camp="警"] .n{color:#7fe3f5}
+
+/* ---------------- 弹窗 ---------------- */
+.mask{position:fixed;inset:0;background:rgba(5,9,18,.78);z-index:60;display:flex;
+  align-items:center;justify-content:center;padding:16px;overflow:auto}
+.dlg{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  max-width:640px;width:100%;padding:20px;max-height:90vh;overflow:auto}
+.dlg h2{margin:0 0 4px;font-size:20px}
+.dlg .sub{color:var(--dim2);font-size:12.5px;margin-bottom:12px}
+.dlg .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.kv{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px;line-height:1.8}
+.kv b{color:var(--victim)}
+.pick{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;
+  font-size:13px;line-height:1.7;cursor:pointer;background:#141f36}
+.pick:hover{border-color:#3c587f}
+.pick.right{border-color:var(--ok);background:#12261c}
+.pick.wrong{border-color:var(--scam);background:#26141a}
+ul.pts{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.85;color:#d7e1f0}
+.guard{border-left:3px solid var(--victim);background:#241f0d;padding:10px 12px;
+  border-radius:0 10px 10px 0;font-size:13px;line-height:1.8;color:#ffe6a8;margin-top:10px}
+.crime{border-left:3px solid var(--scam);background:#26151a;padding:10px 12px;
+  border-radius:0 10px 10px 0;font-size:12.5px;line-height:1.8;color:#ffb9b9;margin-top:10px}
+.mini{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;margin:10px 0}
+.mini div{aspect-ratio:1;border-radius:3px;background:#141f36;display:flex;
+  align-items:center;justify-content:center;font-size:8px;color:#9fb0cb;text-align:center;
+  overflow:hidden;padding:1px}
+.mini div.v{background:#3a2f0d;color:#ffd76a;box-shadow:inset 0 0 0 1px var(--victim)}
+.mini div.s{background:#3a1418;color:#ff8a8a;box-shadow:inset 0 0 0 1px var(--scam)}
+.warn{color:var(--scam);font-size:13px}
+.note{font-size:11.5px;color:var(--dim2);line-height:1.7;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="logo">识骗<em>迷局</em></div>
+  <div class="sp"></div>
+  <button class="btn ghost" id="btnHome">章节地图</button>
+  <button class="btn ghost" id="btnLib">防骗指南</button>
+  <button class="btn ghost" id="btnReset">清空存档</button>
+</div>
+
+<div class="wrap" id="pageHome"></div>
+<div class="wrap hidden" id="pagePlay"></div>
+<div id="modalHost"></div>
+
+<script>
+const DATA = /*__DATA__*/null/*__DATA__*/;
+const CHARS = /*__CHARS__*/null/*__CHARS__*/;
+const SAVE_KEY = "shimian.save.v1";
+const CAMPCOLOR = {"骗":"var(--scam)","受害":"var(--victim)","警":"var(--police)","路":"var(--road)"};
+
+/* ------------------------------------------------------------------ 存档 */
+function loadSave(){
+  try{ return JSON.parse(localStorage.getItem(SAVE_KEY)||"{}"); }catch(e){ return {}; }
+}
+function writeSave(s){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(s)); }catch(e){} }
+let SAVE = loadSave();
+
+/* ------------------------------------------------------------------ 工具 */
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+function zoneOf(r,c){ return Math.floor(r/3)*3+Math.floor(c/3); }
+function zName(lv,i){ return (i+1)+"·"+lv.zones[i]; }
+function starsHTML(n){
+  let s=""; for(let i=0;i<3;i++) s += (i<n?"★":"☆");
+  return '<span class="stars">'+s+'</span>';
+}
+function fmtTime(sec){
+  const m=Math.floor(sec/60), s=sec%60;
+  return (m?m+"分":"")+s+"秒";
+}
+function isUnlocked(idx){
+  if(idx===0) return true;
+  const prev = DATA.levels[idx-1];
+  return !!(SAVE[prev.id] && SAVE[prev.id].solved);
+}
+
+/* ------------------------------------------------------------------ 状态 */
+let CUR=null, SEL=null, placed={}, used=new Set(), hints=0, tries=0, t0=0, timer=null, sec=0;
+
+/* ------------------------------------------------------------------ 首页 */
+function renderHome(){
+  const host=document.getElementById("pageHome");
+  const solvedN = DATA.levels.filter(l=>SAVE[l.id]&&SAVE[l.id].solved).length;
+  const starN = DATA.levels.reduce((a,l)=>a+((SAVE[l.id]&&SAVE[l.id].stars)||0),0);
+  let h = '<div class="hero">'+
+    '<h1>把九个人摆回他们该在的位置，骗子就露出来了</h1>'+
+    '<p>每一关是一张案发现场的 9×9 平面图：九个真人站在九个格子里，'+
+    '<b>每一排、每一列、每一个 3×3 区块里，都恰好只有一个人</b>。'+
+    '读线索，把人一个一个摆回去——摆对了，受害者和主骗的坐标自己就浮出来了。</p>'+
+    '<div class="rules">'+
+      '<span class="chip">一局 <b>9 个人</b></span>'+
+      '<span class="chip">一条铁律：<b>排 / 列 / 区各一人</b></span>'+
+      '<span class="chip">每关线索 <b>已验证唯一解</b></span>'+
+      '<span class="chip">不用猜，<b>纯逻辑可推</b></span>'+
+    '</div>'+
+    '<div class="stat"><span>已结案 '+solvedN+' / '+DATA.levels.length+'</span>'+
+    '<span>累计星级 '+starN+' / '+(DATA.levels.length*3)+'</span>'+
+    '<span>题材全部来自《人间防骗指南》371 篇真实骗局拆解</span></div>'+
+    '<div class="row"><button class="btn main" id="daily">今日一案</button>'+
+    '<button class="btn ghost" id="randLv">随便挑一关</button></div>'+
+  '</div>';
+
+  DATA.chapters.forEach(ch=>{
+    h += '<div class="chap"><h2>第 '+ch.id+' 章 · '+ch.name+'</h2><span>'+ch.sub+'</span></div>';
+    h += '<div class="cards">';
+    DATA.levels.forEach((lv,i)=>{
+      if(lv.chapter!==ch.id) return;
+      const rec = SAVE[lv.id]||{};
+      const open = isUnlocked(i);
+      h += '<button class="card" data-idx="'+i+'">'+
+        '<div class="no">'+lv.id.toUpperCase()+' · 线索 '+lv.clueCount+' 条 · '+
+          '烧脑 '+"★".repeat(Math.min(4,lv.difficulty))+'</div>'+
+        '<div class="t">'+lv.title+'</div>'+
+        '<div class="s">'+lv.scene+'</div>'+
+        '<div class="foot">'+starsHTML(rec.stars||0)+
+          (rec.best?('<span>最好 '+fmtTime(rec.best)+'</span>'):'<span>未结案</span>')+'</div>'+
+        (open?"":'<div class="lock">先解开上一关</div>')+
+      '</button>';
+    });
+    h += '</div>';
+  });
+  h += '<div class="note">灵感来自 Murdle 家族的 Murdoku 玩法（数独式网格推理），'+
+       '只借机制，题面与案情全部由本项目的骗局拆解内容生成，非改编原题。<br>'+
+       '真遇到正在发生的转账：先挂电话，打 110 或 96110。</div>';
+  host.innerHTML=h;
+  host.querySelectorAll(".card").forEach(b=>{
+    b.onclick=()=>{ const i=+b.dataset.idx; if(!isUnlocked(i)) return; startLevel(DATA.levels[i]); };
+  });
+  // 今日一案：按日期取一关，同一天同一关
+  const day = Math.floor(Date.now()/864e5);
+  document.getElementById("daily").onclick=()=>{
+    startLevel(DATA.levels[day % DATA.levels.length]);
+  };
+  document.getElementById("randLv").onclick=()=>{
+    const pool = DATA.levels.filter((_,i)=>isUnlocked(i));
+    startLevel(pool[Math.floor(Math.random()*pool.length)]);
+  };
+}
+
+/* ------------------------------------------------------------------ 关卡 */
+function startLevel(lv){
+  CUR=lv; SEL=null; placed={}; used=new Set(); hints=0; tries=0; sec=0;
+  lv.given.forEach(g=>{ placed[g.name]={r:g.r,c:g.c}; });
+  t0=Date.now(); clearInterval(timer);
+  timer=setInterval(()=>{ sec=Math.floor((Date.now()-t0)/1000);
+    const e=document.getElementById("clk"); if(e) e.textContent=fmtTime(sec); },500);
+  document.getElementById("pageHome").classList.add("hidden");
+  document.getElementById("pagePlay").classList.remove("hidden");
+  document.getElementById("pagePlay").innerHTML=playHTML(lv);
+  bindPlay();
+  renderGrid(); renderRoster(); renderClues();
+}
+
+function playHTML(lv){
+  return ''+
+  '<div class="case">'+
+    '<div class="h">案情 · '+lv.id.toUpperCase()+' 《'+lv.title+'》</div>'+
+    '<div class="c">'+lv.case+'</div>'+
+    '<div class="scene">现场：'+lv.scene+'</div>'+
+  '</div>'+
+  '<div class="play-grid">'+
+    '<div class="boardbox">'+
+      '<div class="board">'+
+        '<div class="rowbar">'+Array.from({length:9},(_,i)=>
+          '<div title="'+(i+1)+' 排：'+lv.rows[i]+'">'+(i+1)+'</div>').join('')+'</div>'+
+        '<div>'+
+          '<div class="colbar">'+Array.from({length:9},(_,i)=>'<div>'+(i+1)+'</div>').join('')+'</div>'+
+          '<div class="grid9" id="grid"></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="roster">'+
+        '<h3>九个人 · 点一个人，再点一个格子</h3>'+
+        '<div class="people" id="people"></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="side">'+
+      '<h3>现场线索</h3>'+
+      '<div class="meta"><span id="clk">0 秒</span><span>已摆 <b id="cnt">0</b>/9</span>'+
+        '<span>提示剩 <b id="hleft">2</b> 次</span></div>'+
+      '<div class="tools">'+
+        '<button class="btn" id="undo">拿回上一个</button>'+
+        '<button class="btn" id="clear">全部撤回</button>'+
+        '<button class="btn" id="hint">用一次提示</button>'+
+        '<button class="btn main" id="submit">提交，锁定答案</button>'+
+      '</div>'+
+      '<div id="clues"></div>'+
+      '<div id="hintArea"></div>'+
+      '<h3 style="margin-top:14px">区块对照</h3>'+
+      '<div class="note" style="margin-top:0">'+lv.zones.map((z,i)=>zName(lv,i)).join(' ｜ ')+
+        '<br>'+lv.rows.map((r,i)=>(i+1)+' 排 '+r).join(' ｜ ')+'</div>'+
+    '</div>'+
+  '</div>';
+}
+
+let lastPlaced=[];
+function bindPlay(){
+  document.getElementById("undo").onclick=()=>{
+    if(!lastPlaced.length) return;
+    const n=lastPlaced.pop(); delete placed[n]; renderGrid(); renderRoster();
+  };
+  document.getElementById("clear").onclick=()=>{
+    placed={}; lastPlaced=[]; CUR.given.forEach(g=>placed[g.name]={r:g.r,c:g.c});
+    renderGrid(); renderRoster();
+  };
+  document.getElementById("hint").onclick=()=>{
+    if(hints>=2) return;
+    hints++; document.getElementById("hleft").textContent=2-hints;
+    const box=document.getElementById("hintArea");
+    box.innerHTML='<div class="hintbox">提示 '+hints+'：'+CUR.hints[hints-1]+'</div>';
+  };
+  document.getElementById("submit").onclick=doSubmit;
+}
+
+function cellKey(r,c){ return r+"_"+c; }
+
+function renderGrid(){
+  const g=document.getElementById("grid"); g.innerHTML="";
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++){
+    const d=document.createElement("div");
+    d.className="cell"+(zoneOf(r,c)%2?" zb":"");
+    d.dataset.r=r; d.dataset.c=c;
+    const occupant=Object.keys(placed).find(n=>placed[n].r===r&&placed[n].c===c);
+    if(occupant){
+      const role=CUR.roles.find(x=>x.name===occupant);
+      const isGiven=CUR.given.some(x=>x.name===occupant);
+      const img=document.createElement("img"); img.src=CHARS[role.camp]; d.appendChild(img);
+      const nm=document.createElement("div"); nm.className="nm"; nm.textContent=occupant;
+      d.appendChild(nm);
+      if(isGiven){ const b=document.createElement("div"); b.className="badge"; b.textContent="给定"; d.appendChild(b); }
+      if(occupant===CUR.scammer) d.style.boxShadow="inset 0 0 0 2px #ff5b5b";
+    } else if(r%3===0&&c%3===0){
+      const z=document.createElement("div"); z.className="ztag";
+      z.textContent=zName(CUR,zoneOf(r,c)); d.appendChild(z);
+    }
+    d.onclick=()=>onCell(r,c,d);
+    g.appendChild(d);
+  }
+  const n=Object.keys(placed).length;
+  const e=document.getElementById("cnt"); if(e) e.textContent=n;
+  // 选中人时高亮可用格
+  if(SEL){
+    for(const dd of g.children){
+      const rr=+dd.dataset.r, cc=+dd.dataset.c;
+      if(conflictFor(SEL,rr,cc)) dd.classList.add("locked"); else dd.classList.add("hl");
+    }
+  }
+}
+
+function conflictFor(name,r,c){
+  const z=zoneOf(r,c);
+  return Object.keys(placed).some(n=>{
+    if(n===name) return false;
+    const p=placed[n];
+    return p.r===r||p.c===c||zoneOf(p.r,p.c)===z;
+  });
+}
+
+function onCell(r,c,d){
+  const occupant=Object.keys(placed).find(n=>placed[n].r===r&&placed[n].c===c);
+  if(!SEL){
+    if(occupant){
+      if(CUR.given.some(x=>x.name===occupant)){ toast("这一位是开局就站好的，不能动"); return; }
+      SEL=occupant; delete placed[occupant];
+      lastPlaced=lastPlaced.filter(x=>x!==occupant);
+      renderGrid(); renderRoster();
+    }
+    return;
+  }
+  if(occupant){ d.classList.add("conflict"); setTimeout(()=>d.classList.remove("conflict"),320); toast("这格已经有人了"); return; }
+  if(conflictFor(SEL,r,c)){
+    d.classList.add("conflict"); setTimeout(()=>d.classList.remove("conflict"),320);
+    toast("同一排 / 同一列 / 同一个区块里只能站一个人"); return;
+  }
+  placed[SEL]={r:r,c:c}; lastPlaced.push(SEL);
+  SEL=null; renderGrid(); renderRoster();
+  if(Object.keys(placed).length===9) toast("九个人都站好了，可以提交");
+}
+
+function renderRoster(){
+  const host=document.getElementById("people"); host.innerHTML="";
+  CUR.roles.forEach(role=>{
+    const done=!!placed[role.name];
+    const b=document.createElement("div");
+    b.className="p"+(SEL===role.name?" sel":"")+(done?" done":"");
+    b.dataset.camp=role.camp;
+    b.innerHTML='<img src="'+CHARS[role.camp]+'"><div class="n">'+role.name+'</div>'+
+      '<div class="d">'+role.desc+'</div>'+
+      '<div class="ring" style="box-shadow:inset 0 0 0 1px '+CAMPCOLOR[role.camp]+'33"></div>';
+    b.onclick=()=>{
+      if(placed[role.name]){
+        if(CUR.given.some(x=>x.name===role.name)){ toast("这一位是开局就站好的，不能动"); return; }
+        delete placed[role.name]; lastPlaced=lastPlaced.filter(x=>x!==role.name);
+        SEL=role.name;
+      } else {
+        SEL = (SEL===role.name)?null:role.name;
+      }
+      renderGrid(); renderRoster();
+    };
+    host.appendChild(b);
+  });
+}
+
+function renderClues(){
+  const host=document.getElementById("clues"); host.innerHTML="";
+  CUR.clues.forEach((cl,i)=>{
+    const d=document.createElement("div");
+    d.className="clue"+(used.has(i)?" used":"");
+    d.innerHTML='<div class="box">'+(used.has(i)?"✓":"")+'</div><div class="t">'+cl.t+'</div>';
+    d.onclick=()=>{ used.has(i)?used.delete(i):used.add(i); renderClues(); };
+    host.appendChild(d);
+  });
+}
+
+function toast(msg){
+  let t=document.getElementById("toast");
+  if(!t){ t=document.createElement("div"); t.id="toast";
+    t.style.cssText="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:99;"+
+      "background:#1d2b47;border:1px solid #3c587f;color:#e8eef8;padding:9px 16px;border-radius:10px;"+
+      "font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.4)";
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.display="block";
+  clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.display="none"; },1900);
+}
+
+/* ------------------------------------------------------------------ 判定 */
+function doSubmit(){
+  const miss=CUR.roles.map(r=>r.name).filter(n=>!placed[n]);
+  if(miss.length){ toast("还有 "+miss.length+" 个人没安排位置"); return; }
+  tries++;
+  const ok=CUR.roles.every(r=>{
+    const s=CUR.sol[r.name]; const p=placed[r.name];
+    return s.r===p.r && s.c===p.c;
+  });
+  if(!ok){ verdict(false); return; }
+  clearInterval(timer);
+  const rec=SAVE[CUR.id]||{};
+  let st=1;
+  if(tries===1&&hints===0) st=3;
+  else if(tries<=3&&hints<=1) st=2;
+  if(st>(rec.stars||0)) rec.stars=st;
+  if(!rec.best||sec<rec.best) rec.best=sec;
+  rec.solved=true; SAVE[CUR.id]=rec; writeSave(SAVE);
+  verdict(true,st);
+}
+
+function verdict(ok,st){
+  const lv=CUR;
+  const body = ok
+    ? '<div class="kv">九个人全部归位。<br>'+
+      '受害者 <b>'+lv.answer.victim.name+'</b> 在第 <b>'+lv.answer.victim.row+'</b> 排 · '+
+      '第 <b>'+lv.answer.victim.col+'</b> 列 · <b>'+lv.answer.victim.zoneName+'</b><br>'+
+      '主骗 <b>'+lv.answer.scammer.name+'</b> 在第 <b>'+lv.answer.scammer.row+'</b> 排 · '+
+      '第 <b>'+lv.answer.scammer.col+'</b> 列 · <b>'+lv.answer.scammer.zoneName+'</b></div>'+
+      '<div class="kv">用时 '+fmtTime(sec)+' · 提交 '+tries+' 次 · 提示 '+hints+' 次 '+
+      starsHTML(st)+'</div>'+
+      '<div class="row"><button class="btn main" id="goPick">最后一步：哪句话露了破绽</button>'+
+      '<button class="btn" id="goReview">直接看复盘</button></div>'
+    : '<div class="kv"><span class="warn">有人站错了。</span><br>'+
+      '我不告诉你是谁、也不告诉你是几个——回到现场重看线索吧。</div>'+
+      '<div class="row"><button class="btn main" id="back2">回去重摆</button>'+
+      '<button class="btn" id="giveUp">算了，看答案</button></div>';
+  openDlg(ok?"✅ 结案":"❌ 位置不成立", body);
+  if(ok){
+    document.getElementById("goPick").onclick=askPick;
+    document.getElementById("goReview").onclick=()=>showReview(false);
+  } else {
+    document.getElementById("back2").onclick=closeDlg;
+    document.getElementById("giveUp").onclick=()=>{ closeDlg(); showReview(false,true); };
+  }
+}
+
+function askPick(){
+  const lv=CUR, p=lv.pick;
+  let h='<div class="sub">'+p.q+'</div>';
+  p.options.forEach((o,i)=>{
+    h+='<div class="pick" data-i="'+i+'">'+(i+1)+'. '+o+'</div>';
+  });
+  h+='<div id="pickWhy"></div>';
+  openDlg("哪一句话露了破绽",h);
+  document.querySelectorAll(".pick").forEach(d=>{
+    d.onclick=()=>{
+      const i=+d.dataset.i;
+      if(!d.dataset.locked){
+        document.querySelectorAll(".pick").forEach(x=>x.dataset.locked="1");
+        d.classList.add(i===p.answer?"right":"wrong");
+        if(i!==p.answer) document.querySelector('.pick[data-i="'+p.answer+'"]').classList.add("right");
+        document.getElementById("pickWhy").innerHTML=
+          '<div class="guard">'+(i===p.answer?"✅ 正是这句。":"❌ 不是这句。")+p.why+'</div>'+
+          '<div class="row"><button class="btn main" id="goReview2">看完整复盘</button></div>';
+        document.getElementById("goReview2").onclick=()=>showReview(false);
+      }
+    };
+  });
+}
+
+function showReview(solvedFlag,gaveUp){
+  const lv=CUR;
+  let h='<div class="sub">《'+lv.title+'》· 现场还原</div>';
+  h+='<div class="mini">';
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++){
+    const n=Object.keys(lv.sol).find(k=>lv.sol[k].r===r&&lv.sol[k].c===c);
+    let cls="",txt="";
+    if(n){
+      txt=n;
+      cls = n===lv.scammer?" s" : (n===lv.victim?" v":"");
+    }
+    h+='<div class="'+cls.trim()+'">'+txt+'</div>';
+  }
+  h+='</div>';
+  h+='<div class="kv">受害者 <b>'+lv.answer.victim.name+'</b>：第 '+
+     lv.answer.victim.row+' 排 · 第 '+lv.answer.victim.col+' 列 · '+lv.answer.victim.zoneName+
+     '<br>主骗 <b>'+lv.answer.scammer.name+'</b>：第 '+lv.answer.scammer.row+
+     ' 排 · 第 '+lv.answer.scammer.col+' 列 · '+lv.answer.scammer.zoneName+'</div>';
+  h+='<div class="kv" style="font-size:12.5px;line-height:1.9">'+
+     lv.roles.map(r=>'<span style="color:'+CAMPCOLOR[r.camp]+'">■</span> '+r.name+
+       '：第 '+(lv.sol[r.name].r+1)+' 排 第 '+(lv.sol[r.name].c+1)+' 列').join('<br>')+'</div>';
+  h+='<div style="margin-top:12px;font-size:13px;color:#d7e1f0">这套局的识别要点：</div><ul class="pts">'+
+     lv.review.points.map(p=>'<li>'+p+'</li>').join('')+'</ul>';
+  h+='<div class="guard">🛡️ '+lv.review.guard+'</div>';
+  if(lv.crime) h+='<div class="crime">⚖️ '+lv.crime+'（只讲罪名与后果方向，不写量刑年限）</div>';
+  h+='<div class="note">本关案情改编自《人间防骗指南》第 '+lv.article+
+     ' 篇拆解；人物与坐标是为这一局谜题虚构的，诈骗手法与识别要点来自原文。</div>';
+  const idx=DATA.levels.findIndex(x=>x.id===lv.id);
+  const next=DATA.levels[idx+1];
+  h+='<div class="row">'+(next?'<button class="btn main" id="nextLv">下一关：'+next.title+'</button>':'')+
+     '<button class="btn" id="backHome">回章节地图</button></div>';
+  openDlg("结案复盘",h);
+  const nb=document.getElementById("nextLv");
+  if(nb) nb.onclick=()=>{ closeDlg(); startLevel(next); };
+  document.getElementById("backHome").onclick=()=>{ closeDlg(); goHome(); };
+}
+
+/* ------------------------------------------------------------------ 弹窗 */
+function openDlg(title,html){
+  const host=document.getElementById("modalHost");
+  host.innerHTML='<div class="mask"><div class="dlg"><h2>'+title+'</h2>'+html+'</div></div>';
+  host.querySelector(".mask").onclick=e=>{ if(e.target.classList.contains("mask")) closeDlg(); };
+}
+function closeDlg(){ document.getElementById("modalHost").innerHTML=""; }
+
+/* ------------------------------------------------------------------ 导航 */
+function goHome(){
+  clearInterval(timer);
+  document.getElementById("pagePlay").classList.add("hidden");
+  document.getElementById("pageHome").classList.remove("hidden");
+  closeDlg(); renderHome(); window.scrollTo(0,0);
+}
+document.getElementById("btnHome").onclick=goHome;
+// 回知识库：从 game/ 出版是 ../index.html，从本地工作区出版要再上两级
+document.getElementById("btnLib").onclick=()=>{
+  location.href = location.pathname.indexOf("/game-adaptations/") >= 0
+    ? "../../index.html" : "../index.html";
+};
+// 选中的人卡在手上时，按 Esc 放回去（也方便触屏用户）
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && SEL){ SEL=null; renderGrid(); renderRoster(); }
+});
+document.getElementById("btnReset").onclick=()=>{
+  if(!confirm("清空本机上的结案记录和星级？")) return;
+  SAVE={}; writeSave(SAVE); goHome();
+};
+
+renderHome();
+</script>
+</body>
+</html>

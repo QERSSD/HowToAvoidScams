@@ -28,3 +28,6 @@ mindmap.html
 
 marketing/
 mindmaps/
+
+# Python 虚拟环境（构建 PDF/EPUB/Anki/压图用）
+env/

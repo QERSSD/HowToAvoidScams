@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>识骗迷局 · 把九个人摆回原位</title>
+<style>
+:root{
+  --bg:#0b1120; --bg2:#111b2e; --panel:#16223a; --panel2:#1c2a45;
+  --line:#2a3a5a; --txt:#e8eef8; --dim:#93a3bd; --dim2:#6b7c99;
+  --scam:#ff5b5b; --victim:#ffc93c; --police:#3fd0e8; --路人:#93a3bd; --road:#93a3bd;
+  --ok:#3ddc84; --cell:46px; --gap:2px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;}
+body{background:radial-gradient(1200px 600px at 50% -10%,#16233d 0%,var(--bg) 60%);min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none !important}
+
+/* ---------------- 顶栏 ---------------- */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
+  padding:10px 14px;background:rgba(11,17,32,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line)}
+.top .logo{font-weight:800;letter-spacing:1px;font-size:17px}
+.top .logo em{font-style:normal;color:var(--scam)}
+.top .sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--txt);
+  padding:7px 13px;border-radius:9px;font-size:13px;transition:.15s}
+.btn:hover{border-color:#3c587f;background:var(--panel2)}
+.btn.main{background:linear-gradient(135deg,#ff5b5b,#ff8a4c);border:none;font-weight:700}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------------- 首页 ---------------- */
+.wrap{max-width:1080px;margin:0 auto;padding:18px 14px 60px}
+.hero{border:1px solid var(--line);background:linear-gradient(135deg,#152238,#101a2d);
+  border-radius:16px;padding:20px 20px 16px;margin-bottom:18px}
+.hero h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+.hero p{margin:0;color:var(--dim);font-size:13.5px;line-height:1.75}
+.hero .rules{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#16223acc;border-radius:999px;
+  padding:5px 11px;font-size:12px;color:var(--dim)}
+.chip b{color:var(--txt);font-weight:600}
+.chap{margin:20px 0 10px;display:flex;align-items:baseline;gap:10px}
+.chap h2{margin:0;font-size:18px}
+.chap span{color:var(--dim2);font-size:12.5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:14px;
+  padding:14px;text-align:left;transition:.16s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-2px);border-color:#3c587f;background:var(--panel2)}
+.card .no{font-size:11.5px;color:var(--dim2);letter-spacing:1px}
+.card .t{font-size:16px;font-weight:700;margin:5px 0 6px}
+.card .s{font-size:12px;color:var(--dim);line-height:1.6;height:38px;overflow:hidden}
+.card .foot{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--dim2)}
+.stars{color:var(--victim);letter-spacing:2px;font-size:13px}
+.lock{position:absolute;inset:0;background:rgba(9,14,26,.72);display:flex;
+  align-items:center;justify-content:center;font-size:12.5px;color:var(--dim)}
+.stat{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--dim)}
+
+/* ---------------- 关卡页 ---------------- */
+.case{border:1px solid var(--line);border-left:3px solid var(--scam);
+  background:var(--panel);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.case .h{font-size:12px;color:var(--dim2);letter-spacing:1px;margin-bottom:6px}
+.case .c{font-size:13.5px;line-height:1.85;color:#dbe5f4}
+.case .scene{margin-top:8px;font-size:12px;color:var(--dim2)}
+.play-grid{display:grid;grid-template-columns:minmax(430px,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:900px){.play-grid{grid-template-columns:1fr}:root{--cell:38px}}
+@media (max-width:430px){:root{--cell:calc((100vw - 96px)/9)}}
+
+.boardbox{border:1px solid var(--line);background:var(--bg2);border-radius:14px;padding:12px}
+.board{display:flex;gap:4px;justify-content:center}
+.rowbar{display:grid;grid-template-rows:repeat(9,var(--cell));gap:var(--gap);padding-top:20px}
+.rowbar div,.colbar div{display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--dim2)}
+.colbar{display:grid;grid-template-columns:repeat(9,var(--cell));gap:var(--gap);height:20px}
+.grid9{display:grid;grid-template-columns:repeat(9,var(--cell));
+  grid-template-rows:repeat(9,var(--cell));gap:var(--gap)}
+.cell{position:relative;background:#141f36;border-radius:5px;display:flex;
+  align-items:center;justify-content:center;transition:background .12s,box-shadow .12s}
+.cell.zb{background:#182742}
+.cell:hover{background:#22324f}
+.cell.conflict{animation:shake .3s;box-shadow:inset 0 0 0 2px var(--scam)}
+.cell.hl{background:#22365a}
+.cell.locked{cursor:not-allowed}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.cell img{width:82%;height:82%;object-fit:contain;pointer-events:none}
+.cell .nm{position:absolute;bottom:1px;left:0;right:0;text-align:center;
+  font-size:9px;color:#0b1120;background:rgba(232,238,248,.72);border-radius:0 0 5px 5px;
+  pointer-events:none;overflow:hidden;white-space:nowrap}
+.cell .badge{position:absolute;top:1px;left:2px;font-size:8px;background:rgba(255,255,255,.18);
+  border-radius:3px;padding:0 2px;pointer-events:none;color:#cfdbee}
+.ztag{position:absolute;top:2px;left:3px;font-size:9px;color:#7d90b0;pointer-events:none;
+  background:rgba(255,255,255,.06);border-radius:3px;padding:0 3px}
+
+.side{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:12px}
+.side h3{margin:0 0 8px;font-size:13px;letter-spacing:1px;color:var(--dim)}
+.tools{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.tools .btn{padding:6px 10px;font-size:12px}
+.meta{font-size:11.5px;color:var(--dim2);display:flex;gap:10px;margin-bottom:8px}
+.clue{display:flex;gap:8px;padding:7px 8px;border-radius:9px;border:1px solid transparent;
+  font-size:12.5px;line-height:1.6;color:#d7e1f0;cursor:pointer;align-items:flex-start}
+.clue:hover{background:#1b2942}
+.clue .box{flex:none;width:15px;height:15px;border:1px solid var(--line);border-radius:4px;
+  margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ok)}
+.clue.used{color:var(--dim2)}
+.clue.used .t{text-decoration:line-through}
+.clue.used .box{border-color:var(--ok)}
+.hintbox{margin-top:8px;border:1px dashed var(--line);border-radius:9px;padding:8px 10px;
+  font-size:12px;color:#ffd98a;background:#241d10;line-height:1.7}
+
+.roster{margin-top:14px;border:1px solid var(--line);background:var(--panel);
+  border-radius:14px;padding:12px}
+.roster h3{margin:0 0 10px;font-size:13px;letter-spacing:1px;color:var(--dim)}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.p{border:1px solid var(--line);border-radius:11px;padding:8px 6px;text-align:center;
+  background:#141f36;transition:.14s;cursor:pointer;position:relative}
+.p:hover{border-color:#3c587f;transform:translateY(-2px)}
+.p img{width:44px;height:44px;object-fit:contain}
+.p .n{font-size:12.5px;font-weight:700;margin-top:2px}
+.p .d{font-size:10.5px;color:var(--dim2);line-height:1.4;margin-top:2px;height:28px;overflow:hidden}
+.p.sel{border-color:var(--police);box-shadow:0 0 0 2px rgba(63,208,232,.25)}
+.p.done{opacity:.42}
+.p .ring{position:absolute;inset:0;border-radius:11px;pointer-events:none}
+.p[data-camp="骗"] .n{color:#ff8a8a}
+.p[data-camp="受害"] .n{color:#ffd76a}
+.p[data-camp="警"] .n{color:#7fe3f5}
+
+/* ---------------- 弹窗 ---------------- */
+.mask{position:fixed;inset:0;background:rgba(5,9,18,.78);z-index:60;display:flex;
+  align-items:center;justify-content:center;padding:16px;overflow:auto}
+.dlg{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  max-width:640px;width:100%;padding:20px;max-height:90vh;overflow:auto}
+.dlg h2{margin:0 0 4px;font-size:20px}
+.dlg .sub{color:var(--dim2);font-size:12.5px;margin-bottom:12px}
+.dlg .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.kv{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px;line-height:1.8}
+.kv b{color:var(--victim)}
+.pick{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;
+  font-size:13px;line-height:1.7;cursor:pointer;background:#141f36}
+.pick:hover{border-color:#3c587f}
+.pick.right{border-color:var(--ok);background:#12261c}
+.pick.wrong{border-color:var(--scam);background:#26141a}
+ul.pts{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.85;color:#d7e1f0}
+.guard{border-left:3px solid var(--victim);background:#241f0d;padding:10px 12px;
+  border-radius:0 10px 10px 0;font-size:13px;line-height:1.8;color:#ffe6a8;margin-top:10px}
+.crime{border-left:3px solid var(--scam);background:#26151a;padding:10px 12px;
+  border-radius:0 10px 10px 0;font-size:12.5px;line-height:1.8;color:#ffb9b9;margin-top:10px}
+.mini{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;margin:10px 0}
+.mini div{aspect-ratio:1;border-radius:3px;background:#141f36;display:flex;
+  align-items:center;justify-content:center;font-size:8px;color:#9fb0cb;text-align:center;
+  overflow:hidden;padding:1px}
+.mini div.v{background:#3a2f0d;color:#ffd76a;box-shadow:inset 0 0 0 1px var(--victim)}
+.mini div.s{background:#3a1418;color:#ff8a8a;box-shadow:inset 0 0 0 1px var(--scam)}
+.warn{color:var(--scam);font-size:13px}
+.note{font-size:11.5px;color:var(--dim2);line-height:1.7;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="logo">识骗<em>迷局</em></div>
+  <div class="sp"></div>
+  <button class="btn ghost" id="btnHome">章节地图</button>
+  <button class="btn ghost" id="btnLib">防骗指南</button>
+  <button class="btn ghost" id="btnReset">清空存档</button>
+</div>
+
+<div class="wrap" id="pageHome"></div>
+<div class="wrap hidden" id="pagePlay"></div>
+<div id="modalHost"></div>
+
+<script>
+const DATA = {"chapters":[{"id":1,"name":"街坊惊魂","sub":"兼职 · 刷单 · 学生的第一份工","diff":1},{"id":2,"name":"电话那头","sub":"冒充客服 · 公检法 · 隔着屏幕的手","diff":2}],"levels":[{"id":"ch01-01","chapter":1,"index":1,"seed":1101,"title":"入职先交工本费","article":43,"scene":"老城区步行街中段，一间十平米的打字复印店，玻璃门上贴着“打字员急招”。","case":"王女士在群里看到“打字员招聘，手机就能做，日入两百”。加上的“招生老师”很热情，问完年龄学历就说恭喜通过，名额有限，要先交一笔工本费建档。交完还有保密费、资料费、审核费，每笔都说自己是最后一笔。第二周，对方把她拉黑了。","zones":["复印机旁","门口台阶","报刊栏","奶茶铺","缝纫店","摇摇车","彩票亭","楼道邮箱","修表摊"],"rows":["最里一排","货架过道","复印区","收银台前","玻璃门内侧","骑楼下","报刊栏前","人行道边","最外一排"],"roles":[{"name":"招生老师","camp":"骗","icon":"pianzi","desc":"发布招聘信息的客服，头像是网图"},{"name":"财务小妹","camp":"骗","icon":"pianzi","desc":"负责收工本费的收款账号主人"},{"name":"王女士","camp":"受害","icon":"shouhaizhe","desc":"想找个在家能做的兼职的宝妈"},{"name":"反诈民警老周","camp":"警","icon":"jingcha","desc":"接到预警上门劝阻的片区民警"},{"name":"打印店老板","camp":"路","icon":"luren","desc":"把门口租出去贴广告的人"},{"name":"奶茶店员","camp":"路","icon":"luren","desc":"见过王女士进来问路"},{"name":"报刊亭大爷","camp":"路","icon":"luren","desc":"门口最有见识的人"},{"name":"缝纫店阿姨","camp":"路","icon":"luren","desc":"整条街最爱打听八卦的人"},{"name":"同小区张姐","camp":"路","icon":"luren","desc":"陪王女士一起来看地方的邻居"}],"given":[{"name":"报刊亭大爷","r":5,"c":5},{"name":"缝纫店阿姨","r":2,"c":0},{"name":"财务小妹","r":1,"c":8}],"clues":[{"t":"同小区张姐 站在第 8 排 人行道边。","k":"row","a":["同小区张姐"],"p":[7]},{"t":"监控拍到 王女士 就站在第 4 排 收银台前。","k":"row","a":["王女士"],"p":[3]},{"t":"打印店老板 紧挨着 同小区张姐 的北边一排。","k":"above1","a":["打印店老板","同小区张姐"],"p":[]},{"t":"同小区张姐 就站在 财务小妹 左手边一格。","k":"left1","a":["同小区张姐","财务小妹"],"p":[]},{"t":"王女士 就站在 奶茶店员 左手边一格。","k":"left1","a":["王女士","奶茶店员"],"p":[]},{"t":"招生老师 就站在 报刊亭大爷 左手边一格。","k":"left1","a":["招生老师","报刊亭大爷"],"p":[]},{"t":"财务小妹 的区号比 打印店老板 大 5。","k":"zonediff","a":["财务小妹","打印店老板"],"p":[5]}],"sol":{"招生老师":{"r":0,"c":4},"财务小妹":{"r":1,"c":8},"王女士":{"r":3,"c":1},"反诈民警老周":{"r":4,"c":6},"打印店老板":{"r":6,"c":3},"奶茶店员":{"r":8,"c":2},"报刊亭大爷":{"r":5,"c":5},"缝纫店阿姨":{"r":2,"c":0},"同小区张姐":{"r":7,"c":7}},"victim":"王女士","scammer":"招生老师","answer":{"victim":{"name":"王女士","row":4,"col":2,"zone":4,"zoneName":"奶茶铺"},"scammer":{"name":"招生老师","row":1,"col":5,"zone":2,"zoneName":"门口台阶"}},"hints":["受害者躲在第 4 区 奶茶铺，顺着这一区的行列往下推。","主骗在第 1 排、第 5 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"复盘这段对话，哪一句话最能说明对方是骗子？","options":["“名额有限，今天报名还有最后的几个位置。”","“先把工本费交一下，我们这边给你建档。”","“任务很简单，就是照着图片打字。”","“你加一下我的工作微信，方便派单。”"],"answer":1,"why":"正规工作不会向员工收钱。凡是入职前先交押金、工本费、建档费的，环节没有任何工作发生，钱却是先出去的——这一步就是收网。"},"review":{"points":["任何形式的入职前置收费（押金、工本费、保密费、建档费）都是诈骗信号，正规岗位从不如此。","名目会一层层加，但每一次的理由都指向同一个动作：让你继续转账。","沉没成本是把人套牢的关键：已经交过钱的人更容易再交一次。"],"guard":"找工作先掏钱的，全都别信——用人单位给员工钱，不是反过来。"},"crime":"","difficulty":1,"clueCount":7},{"id":"ch01-02","chapter":1,"index":2,"seed":1102,"title":"拆不完的手串","article":274,"scene":"城郊自建房的一层大厅，地上堆着彩色珠子和串好的半成品手串。","case":"小李在宝妈群里看到“珠子穿成手串，一天三小时稳赚三百，包教包会包回收”。第一期真的给了几十块工钱，第二期就被劝着多拿货：拿得越多，材料费越便宜。她一次拿了将近三万的珠子。交货那天，对方说这批活做得不合格，一颗都不收。","zones":["珠子堆放区","收发货台","院子门口","缝纫机旁","茶水间","样板展示墙","快递架","晾晒区","后间仓库"],"rows":["最里一排","仓库门口","货架前","发货台前","院子中间","展示墙下","快递架前","院子里","门口一排"],"roles":[{"name":"发货员阿玲","camp":"骗","icon":"pianzi","desc":"朋友圈里天天晒回收单的人"},{"name":"回收员老徐","camp":"骗","icon":"pianzi","desc":"上门收货，负责说验收不合格"},{"name":"群主素素","camp":"骗","icon":"pianzi","desc":"宝妈群里的“过来人”，实际是引流号"},{"name":"宝妈小李","camp":"受害","icon":"shouhaizhe","desc":"想一边带娃一边挣点生活费的年轻妈妈"},{"name":"社区片警小马","camp":"警","icon":"jingcha","desc":"来核实“居家代加工”投诉的民警"},{"name":"房东阿姨","camp":"路","icon":"luren","desc":"把一层租出去的人，见过很多人来退货"},{"name":"快递小哥","camp":"路","icon":"luren","desc":"每天下午来收一趟退货件"},{"name":"隔壁裁缝","camp":"路","icon":"luren","desc":"见过小李来问丝线价格"},{"name":"同村姐妹","camp":"路","icon":"luren","desc":"被小李拉进群的人"}],"given":[{"name":"群主素素","r":8,"c":7},{"name":"快递小哥","r":3,"c":5},{"name":"同村姐妹","r":7,"c":0}],"clues":[{"t":"监控拍到 宝妈小李 就站在第 2 排 仓库门口。","k":"row","a":["宝妈小李"],"p":[1]},{"t":"发货员阿玲 紧挨着 快递小哥 的北边一排。","k":"above1","a":["发货员阿玲","快递小哥"],"p":[]},{"t":"社区片警小马 就站在 宝妈小李 左手边一格。","k":"left1","a":["社区片警小马","宝妈小李"],"p":[]},{"t":"群主素素 就站在 隔壁裁缝 左手边一格。","k":"left1","a":["群主素素","隔壁裁缝"],"p":[]},{"t":"发货员阿玲 就站在 回收员老徐 左手边一格。","k":"left1","a":["发货员阿玲","回收员老徐"],"p":[]},{"t":"社区片警小马 的区号比 房东阿姨 小 1。","k":"zonediff","a":["社区片警小马","房东阿姨"],"p":[-1]},{"t":"快递小哥 的区号，正好等于 隔壁裁缝 的排号。","k":"zonerow","a":["快递小哥","隔壁裁缝"],"p":[]}],"sol":{"发货员阿玲":{"r":2,"c":3},"回收员老徐":{"r":6,"c":4},"群主素素":{"r":8,"c":7},"宝妈小李":{"r":1,"c":2},"社区片警小马":{"r":5,"c":1},"房东阿姨":{"r":0,"c":6},"快递小哥":{"r":3,"c":5},"隔壁裁缝":{"r":4,"c":8},"同村姐妹":{"r":7,"c":0}},"victim":"宝妈小李","scammer":"发货员阿玲","answer":{"victim":{"name":"宝妈小李","row":2,"col":3,"zone":1,"zoneName":"珠子堆放区"},"scammer":{"name":"发货员阿玲","row":3,"col":4,"zone":2,"zoneName":"收发货台"}},"hints":["受害者躲在第 1 区 珠子堆放区，顺着这一区的行列往下推。","主骗在第 3 排、第 4 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"这套局里，哪句话是它必然有鬼的证据？","options":["“一天三小时，日赚三百。”","“包教包会，包回收。”","“拿货越多材料费越便宜。”","“这边的效果图都是实物实拍。”"],"answer":2,"why":"“多拿货更便宜”把受害者从“干活领工资”改成了“自己垫材料”——一旦变成了囤货，验收标准就完全由对方说了算，合同再漂亮也没用。"},"review":{"points":["手工活外包的正规模式是免费供料、完工付费；让你自己掏钱买材料的，本质是卖货。","“包回收”没有明确标准与第三方结算，就等于没有回收。","先给小额甜头（第一单真的结钱）是为了让你相信后面更大的数字。"],"guard":"凡是宣称零门槛、高回报、居家就能躺赚的手工活，都是骗局——最后收割的都是你自己垫的材料钱。"},"crime":"","difficulty":1,"clueCount":7},{"id":"ch01-03","chapter":1,"index":3,"seed":1103,"title":"一天三百的充场","article":302,"scene":"电商产业园 3 号楼二层开放工位，二十几张桌子,每张桌上摆着一部待注册的手机。","case":"“早九晚六，带了身份证和手机就行，坐满一天日结三百到五百，剩下时间随便玩手机。”小蒋去了，把身份证、手机号、支付账号交给现场的人“登记”。三个月后，警察找上门：他名下注册了十几个店铺，流水上千万，全是电诈赃款。","zones":["前台","开放工位A","开放工位B","会议室","茶水间","打印机位","储物柜","逃生通道","阳台"],"rows":["最里一排","工位最深处","靠窗工位","中间过道","打印机前","会议室门口","储物柜前","前台外","最外一排"],"roles":[{"name":"带队娜姐","camp":"骗","icon":"pianzi","desc":"在兼职群里招“凑人头”的人"},{"name":"技术员小K","camp":"骗","icon":"pianzi","desc":"负责拿手机批量注册店铺"},{"name":"结算的阿峰","camp":"骗","icon":"pianzi","desc":"负责当场发日结现金"},{"name":"大学生小蒋","camp":"受害","icon":"shouhaizhe","desc":"只想赚个日结生活费的学生"},{"name":"反诈中心民警","camp":"警","icon":"jingcha","desc":"根据涉诈账号线索找上门的警官"},{"name":"前台小妹","camp":"路","icon":"luren","desc":"每天看着一批批兼职生进来"},{"name":"同校学长","camp":"路","icon":"luren","desc":"介绍小蒋来这里的中间人"},{"name":"保洁阿姨","camp":"路","icon":"luren","desc":"见过工位上放着成叠身份证"},{"name":"外卖骑手","camp":"路","icon":"luren","desc":"每天中午给这层送十几份饭"}],"given":[{"name":"外卖骑手","r":8,"c":1},{"name":"结算的阿峰","r":7,"c":7},{"name":"前台小妹","r":6,"c":4}],"clues":[{"t":"同校学长 那会儿人在第 6 区 打印机位。","k":"zone","a":["同校学长"],"p":[5]},{"t":"反诈中心民警 站在第 6 列。","k":"col","a":["反诈中心民警"],"p":[5]},{"t":"带队娜姐 紧挨着 前台小妹 的北边一排。","k":"above1","a":["带队娜姐","前台小妹"],"p":[]},{"t":"技术员小K 紧挨着 同校学长 的北边一排。","k":"above1","a":["技术员小K","同校学长"],"p":[]},{"t":"大学生小蒋 紧挨着 技术员小K 的北边一排。","k":"above1","a":["大学生小蒋","技术员小K"],"p":[]},{"t":"技术员小K 就站在 保洁阿姨 左手边一格。","k":"left1","a":["技术员小K","保洁阿姨"],"p":[]},{"t":"结算的阿峰 就站在 同校学长 左手边一格。","k":"left1","a":["结算的阿峰","同校学长"],"p":[]},{"t":"结算的阿峰 的区号比 保洁阿姨 小 7。","k":"zonediff","a":["结算的阿峰","保洁阿姨"],"p":[-7]}],"sol":{"带队娜姐":{"r":5,"c":0},"技术员小K":{"r":2,"c":2},"结算的阿峰":{"r":7,"c":7},"大学生小蒋":{"r":1,"c":6},"反诈中心民警":{"r":4,"c":5},"前台小妹":{"r":6,"c":4},"同校学长":{"r":3,"c":8},"保洁阿姨":{"r":0,"c":3},"外卖骑手":{"r":8,"c":1}},"victim":"大学生小蒋","scammer":"带队娜姐","answer":{"victim":{"name":"大学生小蒋","row":2,"col":7,"zone":3,"zoneName":"开放工位B"},"scammer":{"name":"带队娜姐","row":6,"col":1,"zone":4,"zoneName":"会议室"}},"hints":["受害者躲在第 3 区 开放工位B，顺着这一区的行列往下推。","主骗在第 6 排、第 1 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪个细节能直接判定这不是兼职，而是犯罪链条的一环？","options":["“日结三百到五百。”","“坐满一天就行，剩下的时间随便玩。”","“把身份证和支付账号交给现场工作人员登记。”","“中午管一顿饭。”"],"answer":2,"why":"“把你名下的证件和账号交给别人使用”是这条链路的核心目的——注册的店铺、收款的账户全都记在你头上，洗钱完成后，第一个被追的是账户的主人。"},"review":{"points":["交出身份证、银行卡、支付账号去注册的每一家公司、每一家店铺，出事都算在你名下。","这类行为通常触及帮助信息网络犯罪活动罪（帮信罪）或掩饰、隐瞒犯罪所得罪，留下案底影响终身。","“我只是去坐了一天”不是免责理由，司法机关看的是账户归属与人头数量。"],"guard":"凡是“用你的名义”去做的事——办卡、开店、注册账号、代收款——出事都算在你头上。","crime":"可能涉及帮信罪、掩饰隐瞒犯罪所得罪；名下账户一旦涉案，会被惩戒并影响征信。"},"crime":"可能涉及帮信罪、掩饰隐瞒犯罪所得罪；名下账户一旦涉案，会被惩戒并影响征信。","difficulty":1,"clueCount":8},{"id":"ch01-04","chapter":1,"index":4,"seed":1104,"title":"先交押金的寄拍单","article":125,"scene":"创业园 B 座七层，一间挂着柔光布、放了两盏补光灯的摄影棚。","case":"小鹿在社交平台上刷到“扩列来女宝，寄拍日结、一单三百”。对方朋友圈里全是精致照片和到账截图。签约时被告知要先交三千押金，理由是“衣服贵重、防止损坏”，承诺接满十单全额退还。钱转过去，第二天账号就被注销了。","zones":["摄影区","试衣间","化妆台","前台接待","样衣架","选片区","茶水台","消防通道","走廊候场区"],"rows":["最里一排","背景布前","补光灯下","样衣架前","化妆台前","选片区里","走廊上","前台外","最外一排"],"roles":[{"name":"经纪人CC","camp":"骗","icon":"pianzi","desc":"朋友圈里精致又励志的“学姐”"},{"name":"摄影师阿哲","camp":"骗","icon":"pianzi","desc":"负责现场拍照、说设备贵重"},{"name":"客服小桃","camp":"骗","icon":"pianzi","desc":"负责收押金、解释“公司规定”"},{"name":"大一女生小鹿","camp":"受害","icon":"shouhaizhe","desc":"想靠兼职挣生活费的学生"},{"name":"派出所民警","camp":"警","icon":"jingcha","desc":"处理报案的年轻警官"},{"name":"同楼层美甲店主","camp":"路","icon":"luren","desc":"见过不少女孩来这里"},{"name":"隔壁主播","camp":"路","icon":"luren","desc":"在群里提醒过是骗局"},{"name":"电梯里的外卖员","camp":"路","icon":"luren","desc":"一天往这层送好几趟外卖"},{"name":"楼下便利店老板","camp":"路","icon":"luren","desc":"见过哭着下来的女孩"}],"given":[{"name":"楼下便利店老板","r":4,"c":5},{"name":"经纪人CC","r":3,"c":1},{"name":"电梯里的外卖员","r":5,"c":8}],"clues":[{"t":"客服小桃 紧挨着 大一女生小鹿 的北边一排。","k":"above1","a":["客服小桃","大一女生小鹿"],"p":[]},{"t":"派出所民警 紧挨着 同楼层美甲店主 的北边一排。","k":"above1","a":["派出所民警","同楼层美甲店主"],"p":[]},{"t":"电梯里的外卖员 紧挨着 摄影师阿哲 的北边一排。","k":"above1","a":["电梯里的外卖员","摄影师阿哲"],"p":[]},{"t":"摄影师阿哲 就站在 派出所民警 左手边一格。","k":"left1","a":["摄影师阿哲","派出所民警"],"p":[]},{"t":"客服小桃 就站在 电梯里的外卖员 左手边一格。","k":"left1","a":["客服小桃","电梯里的外卖员"],"p":[]},{"t":"摄影师阿哲 的区号比 隔壁主播 小 5。","k":"zonediff","a":["摄影师阿哲","隔壁主播"],"p":[-5]},{"t":"客服小桃 的区号，正好等于 隔壁主播 的排号。","k":"zonerow","a":["客服小桃","隔壁主播"],"p":[]}],"sol":{"经纪人CC":{"r":3,"c":1},"摄影师阿哲":{"r":6,"c":2},"客服小桃":{"r":0,"c":7},"大一女生小鹿":{"r":1,"c":0},"派出所民警":{"r":7,"c":3},"同楼层美甲店主":{"r":8,"c":6},"隔壁主播":{"r":2,"c":4},"电梯里的外卖员":{"r":5,"c":8},"楼下便利店老板":{"r":4,"c":5}},"victim":"大一女生小鹿","scammer":"经纪人CC","answer":{"victim":{"name":"大一女生小鹿","row":2,"col":1,"zone":1,"zoneName":"摄影区"},"scammer":{"name":"经纪人CC","row":4,"col":2,"zone":4,"zoneName":"前台接待"}},"hints":["受害者躲在第 1 区 摄影区，顺着这一区的行列往下推。","主骗在第 4 排、第 2 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"这四句话里，哪一句最不可信？","options":["“一单三百，日结，不用经验。”","“衣服贵重，要先交三千押金。”","“接满十单押金全额退还。”","“发几张生活照给我看看。”"],"answer":1,"why":"押金是这条局唯一的收入来源。正规寄拍不会向求职者收任何费用，更不会让一个还没开始赚钱的人先掏三千。"},"review":{"points":["任何要求先交押金、保证金、流动资金的“兼职”，几乎百分之百是诈骗。","朋友圈里用于证明“别人赚到了”的截图和照片，都可以盗图和伪造。","越是强调“姐妹互助”“名额有限”，越是在用关系亲近感替代审核。"],"guard":"先掏钱的兼职，百分之九十九是诈骗——你还什么都没赚到，钱已经先出去了。"},"crime":"","difficulty":1,"clueCount":7},{"id":"ch01-05","chapter":1,"index":5,"seed":1105,"title":"一盒卡牌与假警官","article":337,"scene":"周末的动漫市集，就在学校对面的文体中心一层，摊位一溜排开，全是卡牌和徽章。","case":"小宇想买一张稀有卡，加了卖家好友。对方说未成年人购买要登记，要走身份证号。登记完话锋一转：“你害公司账户被冻结，要负法律责任，还会影响你爸妈。”随后视频里出现穿制服的“警官”，出示带他身份证号的逮捕令，让他拿家长的手机“自证清白”。两周后，家长卡里少了七万多。","zones":["卡牌摊位","收银台","入口闸机","休息长椅","自动售货机","存包柜","洗手间口","消防门","临时舞台"],"rows":["最里一排","靠墙摊位","中间过道","卡牌摊前","收银台前","长椅一排","售货机前","闸机口","最外一排"],"roles":[{"name":"卡牌卖家","camp":"骗","icon":"pianzi","desc":"发“一元一包卡”广告引流的人"},{"name":"假警官","camp":"骗","icon":"pianzi","desc":"视频里穿警服、发假逮捕令的人"},{"name":"解冻客服","camp":"骗","icon":"pianzi","desc":"教孩子“验证资金”的人"},{"name":"13岁的小宇","camp":"受害","icon":"shouhaizhe","desc":"想买一张稀有卡的孩子"},{"name":"网安民警","camp":"警","icon":"jingcha","desc":"接到家长报案来调查的警官"},{"name":"同桌小柯","camp":"路","icon":"luren","desc":"陪小宇一起来逛市集的同学"},{"name":"文具店老板","camp":"路","icon":"luren","desc":"见过孩子拿着手机在店里慌张操作"},{"name":"保安大爷","camp":"路","icon":"luren","desc":"守着入口闸机的人"},{"name":"隔壁摊主","camp":"路","icon":"luren","desc":"卖徽章的摊主，见过小宇来询价"}],"given":[{"name":"13岁的小宇","r":4,"c":5},{"name":"假警官","r":7,"c":3},{"name":"保安大爷","r":3,"c":8}],"clues":[{"t":"解冻客服 从头到尾没离开过第 2 排 靠墙摊位。","k":"row","a":["解冻客服"],"p":[1]},{"t":"隔壁摊主 的位置在第 2 列。","k":"col","a":["隔壁摊主"],"p":[1]},{"t":"假警官 紧挨着 隔壁摊主 的北边一排。","k":"above1","a":["假警官","隔壁摊主"],"p":[]},{"t":"文具店老板 紧挨着 保安大爷 的北边一排。","k":"above1","a":["文具店老板","保安大爷"],"p":[]},{"t":"网安民警 就站在 保安大爷 左手边一格。","k":"left1","a":["网安民警","保安大爷"],"p":[]},{"t":"隔壁摊主 就站在 同桌小柯 左手边一格。","k":"left1","a":["隔壁摊主","同桌小柯"],"p":[]},{"t":"文具店老板 就站在 13岁的小宇 左手边一格。","k":"left1","a":["文具店老板","13岁的小宇"],"p":[]},{"t":"卡牌卖家 的区号比 13岁的小宇 大 4。","k":"zonediff","a":["卡牌卖家","13岁的小宇"],"p":[4]}],"sol":{"卡牌卖家":{"r":0,"c":0},"假警官":{"r":7,"c":3},"解冻客服":{"r":1,"c":6},"13岁的小宇":{"r":4,"c":5},"网安民警":{"r":6,"c":7},"同桌小柯":{"r":5,"c":2},"文具店老板":{"r":2,"c":4},"保安大爷":{"r":3,"c":8},"隔壁摊主":{"r":8,"c":1}},"victim":"13岁的小宇","scammer":"卡牌卖家","answer":{"victim":{"name":"13岁的小宇","row":5,"col":6,"zone":5,"zoneName":"自动售货机"},"scammer":{"name":"卡牌卖家","row":1,"col":1,"zone":1,"zoneName":"卡牌摊位"}},"hints":["受害者躲在第 5 区 自动售货机，顺着这一区的行列往下推。","主骗在第 1 排、第 1 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪一句话一出现，就说明对方是在骗人？","options":["“你是未成年人，需要登记身份信息。”","“用你爸妈的手机，按我说的操作就能解除风险。”","“这件事不要告诉任何人。”","“我会给你发一张截图确认。”"],"answer":1,"why":"公安机关不存在“远程自证清白”，更不会让孩子拿家长的手机去操作账户。这句话的唯一目的，是把孩子的手放在父母的银行卡上。"},"review":{"points":["公安机关不会用视频、网络办案，不存在“安全账户”，也不会把逮捕令发给个人手机。","盯孩子的套路关键在恐吓加羞耻：先让他害怕，再让他不敢告诉家长——这就是“隔离”。","家里要和孩子约定：涉及手机银行、验证码的事，必须当面问过父母再做。"],"guard":"请记住公安机关的“三个不会”：不会网上视频办案、不会让转账到安全账户、不会把通缉令发到个人手机。","crime":"冒充公检法属于诈骗犯罪；同时孩子被诱导转账的账号若来自身边人，也可能牵出帮信链条。"},"crime":"冒充公检法属于诈骗犯罪；同时孩子被诱导转账的账号若来自身边人，也可能牵出帮信链条。","difficulty":1,"clueCount":8},{"id":"ch01-06","chapter":1,"index":6,"seed":1106,"title":"夜市扫码送纸巾","article":252,"scene":"夜市入口到地铁口之间两百米的路段，一张折叠桌上堆着抽纸和二维码立牌。","case":"“扫够五十个人解锁”“贴一张给三块”“闲鱼引流的兼职，日结两百”。小唐接了这活，把二维码贴满了电线杆和共享单车。半个月后他被警方传唤：那些码后面是刷单诈骗群，被骗的人是从他贴的码进去的。","zones":["扫码摊","烧烤摊","彩票点","报刊栏","公厕门口","停车场","地铁口","报刊亭","垃圾桶旁"],"rows":["最里一排","报刊栏前","烧烤摊前","扫码桌前","彩票点前","报刊亭前","地铁闸口","停车位旁","路口一排"],"roles":[{"name":"地推组长","camp":"骗","icon":"pianzi","desc":"给每个人发码，按人头结算"},{"name":"扫码男孩","camp":"骗","icon":"pianzi","desc":"负责把二维码贴得到处都是"},{"name":"结算的马哥","camp":"骗","icon":"pianzi","desc":"晚上在群里按数量发钱"},{"name":"兼职生小唐","camp":"受害","icon":"shouhaizhe","desc":"以为只是帮人扫个码的大学生"},{"name":"巡特警队员","camp":"警","icon":"jingcha","desc":"巡逻时发现小广告异常的人"},{"name":"烧烤摊老板","camp":"路","icon":"luren","desc":"见过有人在电线杆上贴东西"},{"name":"环卫大妈","camp":"路","icon":"luren","desc":"每天早上清理一整筐小卡片"},{"name":"地铁安保","camp":"路","icon":"luren","desc":"见过扫码后被告知“涉嫌诈骗”的学生"},{"name":"便利店员","camp":"路","icon":"luren","desc":"见过小唐拿着一沓抽纸发愣"}],"given":[{"name":"地铁安保","r":8,"c":2},{"name":"烧烤摊老板","r":7,"c":3},{"name":"巡特警队员","r":6,"c":7}],"clues":[{"t":"兼职生小唐 的位置在第 2 列。","k":"col","a":["兼职生小唐"],"p":[1]},{"t":"扫码男孩 紧挨着 结算的马哥 的北边一排。","k":"above1","a":["扫码男孩","结算的马哥"],"p":[]},{"t":"兼职生小唐 紧挨着 扫码男孩 的北边一排。","k":"above1","a":["兼职生小唐","扫码男孩"],"p":[]},{"t":"地推组长 紧挨着 便利店员 的北边一排。","k":"above1","a":["地推组长","便利店员"],"p":[]},{"t":"扫码男孩 就站在 地推组长 左手边一格。","k":"left1","a":["扫码男孩","地推组长"],"p":[]},{"t":"烧烤摊老板 的区号比 便利店员 小 3。","k":"zonediff","a":["烧烤摊老板","便利店员"],"p":[-3]},{"t":"地推组长 的区号，正好等于 环卫大妈 的排号。","k":"zonerow","a":["地推组长","环卫大妈"],"p":[]}],"sol":{"地推组长":{"r":3,"c":6},"扫码男孩":{"r":1,"c":5},"结算的马哥":{"r":2,"c":8},"兼职生小唐":{"r":0,"c":1},"巡特警队员":{"r":6,"c":7},"烧烤摊老板":{"r":7,"c":3},"环卫大妈":{"r":5,"c":0},"地铁安保":{"r":8,"c":2},"便利店员":{"r":4,"c":4}},"victim":"兼职生小唐","scammer":"地推组长","answer":{"victim":{"name":"兼职生小唐","row":1,"col":2,"zone":1,"zoneName":"扫码摊"},"scammer":{"name":"地推组长","row":4,"col":7,"zone":6,"zoneName":"停车场"}},"hints":["受害者躲在第 1 区 扫码摊，顺着这一区的行列往下推。","主骗在第 4 排、第 7 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪一句最能说明这个兼职不能碰？","options":["“日结两百，当场结算。”","“把二维码贴到人多地方就行。”","“这是给店铺引流的，没事。”","“记得晚上发截图给我。”"],"answer":1,"why":"地推的真正交付物是“陌生人扫了你给的码”。这条链路的下游是诈骗群，而贴码的人就是链条里最容易被抓到的那一环——“我只是听人安排”不能免责。"},"review":{"points":["地推、拉群、扫码引流这类兼职，一旦下游是诈骗，执行者同样会被追究。","凡是要求你批量贴广告、发二维码、拉陌生人进群并按人头结算的，都先想一遍下游是什么。","出事后第一个被追到的往往是最底层的执行者，因为他的身份是唯一的实名信息。"],"guard":"结算方式按人头、交付内容是“拉陌生人”的兼职，别接——你卖的不是力气，是你的身份。","crime":"地推引流常涉嫌诈骗共犯或帮信罪；造成他人被骗、金额较大的，追究更重。"},"crime":"地推引流常涉嫌诈骗共犯或帮信罪；造成他人被骗、金额较大的，追究更重。","difficulty":2,"clueCount":7},{"id":"ch02-01","chapter":2,"index":1,"seed":2201,"title":"甲醛超标的睡衣","article":333,"scene":"老小区门口的快递驿站，从前台到分拣区不过几十步。","case":"网购睡衣到货没两天，电话来了：“您好，您购买的睡衣甲醛超标，公司给您三倍赔偿。”对方报得出商品名、订单号、收货地址。赔付“打不过来”，于是转所谓官方理赔页面、远程协助。验证码一条条报过去，卡里的余额没了，对方又说要“验证还款能力”，让小林去各平台借钱。","zones":["驿站前台","快递货架","门口快递柜","小区门岗","便利店","3号楼电梯","电动车棚","分拣区","物业办公室"],"rows":["最里一排","货架深处","分拣台前","快递柜前","门岗内侧","便利店前","电动车棚前","物业门口","最外一排"],"roles":[{"name":"话务员","camp":"骗","icon":"pianzi","desc":"报得出订单号的人，整通电话都是他说的"},{"name":"话务组长","camp":"骗","icon":"pianzi","desc":"负责转接“主管”，把赔付说成流程"},{"name":"取现手","camp":"骗","icon":"pianzi","desc":"等钱到账后去 ATM 取走的人"},{"name":"小林","camp":"受害","icon":"shouhaizhe","desc":"刚网购完睡衣的年轻租客"},{"name":"反诈民警","camp":"警","icon":"jingcha","desc":"接到预警来上门劝阻的警官"},{"name":"快递员","camp":"路","icon":"luren","desc":"每天午后把件卸到分拣区"},{"name":"邻居阿姨","camp":"路","icon":"luren","desc":"在门口织毛衣，见过谁进进出出"},{"name":"便利店老板","camp":"路","icon":"luren","desc":"见过有人来买充值卡"},{"name":"保安","camp":"路","icon":"luren","desc":"守着小区门岗，见过深夜来取件的人"}],"given":[{"name":"取现手","r":1,"c":1},{"name":"保安","r":4,"c":2}],"clues":[{"t":"监控拍到 快递员 就站在第 9 排 最外一排。","k":"row","a":["快递员"],"p":[8]},{"t":"取现手 紧挨着 小林 的北边一排。","k":"above1","a":["取现手","小林"],"p":[]},{"t":"保安 紧挨着 邻居阿姨 的北边一排。","k":"above1","a":["保安","邻居阿姨"],"p":[]},{"t":"便利店老板 就站在 话务员 左手边一格。","k":"left1","a":["便利店老板","话务员"],"p":[]},{"t":"小林 就站在 邻居阿姨 左手边一格。","k":"left1","a":["小林","邻居阿姨"],"p":[]},{"t":"快递员 就站在 反诈民警 左手边一格。","k":"left1","a":["快递员","反诈民警"],"p":[]},{"t":"取现手 的区号比 便利店老板 大 5。","k":"zonediff","a":["取现手","便利店老板"],"p":[5]},{"t":"话务员 的排号，正好等于 话务组长 的区号。","k":"rowzone","a":["话务员","话务组长"],"p":[]}],"sol":{"话务员":{"r":6,"c":8},"话务组长":{"r":7,"c":0},"取现手":{"r":1,"c":1},"小林":{"r":2,"c":3},"反诈民警":{"r":0,"c":6},"快递员":{"r":8,"c":5},"邻居阿姨":{"r":5,"c":4},"便利店老板":{"r":3,"c":7},"保安":{"r":4,"c":2}},"victim":"小林","scammer":"话务员","answer":{"victim":{"name":"小林","row":3,"col":4,"zone":2,"zoneName":"快递货架"},"scammer":{"name":"话务员","row":7,"col":9,"zone":9,"zoneName":"物业办公室"}},"hints":["受害者躲在第 2 区 快递货架，顺着这一区的行列往下推。","主骗在第 7 排、第 9 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"这通电话里，哪句话是它必定是骗局的证据？","options":["“您购买的睡衣甲醛超标。”","“赔付打不过去，需要您这边配合验证一下还款能力。”","“订单号和收货地址我念给您核对一下。”","“这次赔付是公司统一安排的。”"],"answer":1,"why":"退款是把钱给你，不需要你做任何操作，更不需要证明“还得起钱”。一旦出现“先验证、先借出来、先转过去才能赔”，钱的方向就反了。"},"review":{"points":["钱没到账之前，任何让你先操作、先验证、先借出来的“赔付”，都是在挖坑。","订单信息精准不代表对方是客服：这条信息常常是被打包卖到黑市的。","验证码是最后一道锁，谁都不给；理赔只在原平台内走原路径。"],"guard":"退款是把钱打给你，不需要你先转账，也不需要你先借钱来证明什么。"},"crime":"","difficulty":1,"clueCount":8},{"id":"ch02-02","chapter":2,"index":2,"seed":2202,"title":"我把屏幕共享出去了","article":332,"scene":"街道社区服务中心的办事大厅，一排自助终端和几张长椅。","case":"“您操作不熟练没关系，下载这个会议软件，打开屏幕共享，我一步步教您。”从按下“共享”那一刻起，陈老师手机上的一切都直播给了对方：银行卡密码、短信验证码、余额、网贷额度。等到银行卡被刷走几万，对方还叮嘱“别挂电话，正在处理”。","zones":["咨询台","自助终端","填表区","等候长椅","复印区","办事窗口","母婴室","入口闸机","报刊架"],"rows":["最里一排","窗口前","自助机前","填表台前","咨询台前","长椅一排","复印机前","闸机口","最外一排"],"roles":[{"name":"客服小范","camp":"骗","icon":"pianzi","desc":"自称平台客服，说“我帮您远程弄”"},{"name":"远程技术","camp":"骗","icon":"pianzi","desc":"负责指导下载会议软件"},{"name":"资金专员","camp":"骗","icon":"pianzi","desc":"在共享画面里挑额度最高的平台下手"},{"name":"退休陈老师","camp":"受害","icon":"shouhaizhe","desc":"手机不太会用，怕耽误事的长辈"},{"name":"社区片警","camp":"警","icon":"jingcha","desc":"在中心做反诈宣传时被叫过去的警官"},{"name":"志愿者小吴","camp":"路","icon":"luren","desc":"帮老人取号的大学生志愿者"},{"name":"大厅保安","camp":"路","icon":"luren","desc":"见过陈老师拿着手机急得直转"},{"name":"旁边办事的大姐","camp":"路","icon":"luren","desc":"听见了电话里的“开启共享”"},{"name":"打印店小伙","camp":"路","icon":"luren","desc":"帮陈老师复印过银行卡"}],"given":[{"name":"资金专员","r":2,"c":0},{"name":"远程技术","r":3,"c":5}],"clues":[{"t":"旁边办事的大姐 站在第 7 排 复印机前。","k":"row","a":["旁边办事的大姐"],"p":[6]},{"t":"打印店小伙 紧挨着 退休陈老师 的北边一排。","k":"above1","a":["打印店小伙","退休陈老师"],"p":[]},{"t":"客服小范 就站在 打印店小伙 左手边一格。","k":"left1","a":["客服小范","打印店小伙"],"p":[]},{"t":"客服小范 的排号，正好等于 社区片警 的区号。","k":"rowzone","a":["客服小范","社区片警"],"p":[]},{"t":"资金专员 的排号，正好等于 打印店小伙 的区号。","k":"rowzone","a":["资金专员","打印店小伙"],"p":[]},{"t":"退休陈老师 和 大厅保安 的列号加起来是 12。","k":"colsum","a":["退休陈老师","大厅保安"],"p":[12]},{"t":"退休陈老师 和 志愿者小吴 的列号加起来是 6。","k":"colsum","a":["退休陈老师","志愿者小吴"],"p":[6]},{"t":"大厅保安 只在 第 2 排 窗口前 或 第 5 排 咨询台前 这两排里。","k":"rowor2","a":["大厅保安"],"p":[1,4]}],"sol":{"客服小范":{"r":7,"c":6},"远程技术":{"r":3,"c":5},"资金专员":{"r":2,"c":0},"退休陈老师":{"r":1,"c":4},"社区片警":{"r":8,"c":3},"志愿者小吴":{"r":5,"c":2},"大厅保安":{"r":4,"c":8},"旁边办事的大姐":{"r":6,"c":1},"打印店小伙":{"r":0,"c":7}},"victim":"退休陈老师","scammer":"客服小范","answer":{"victim":{"name":"退休陈老师","row":2,"col":5,"zone":2,"zoneName":"自助终端"},"scammer":{"name":"客服小范","row":8,"col":7,"zone":9,"zoneName":"报刊架"}},"hints":["受害者躲在第 2 区 自助终端，顺着这一区的行列往下推。","主骗在第 8 排、第 7 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪句话说明对面一定是骗子？","options":["“您别着急，慢慢来。”","“打开屏幕共享，我一步步教您操作。”","“我们先核对一下您的账户信息。”","“这次是系统升级导致的异常。”"],"answer":1,"why":"没有任何正规业务需要共享屏幕。共享之后，你输入的密码和收到的验证码对对方是完全可见的，验证码根本不用你读出来。"},"review":{"points":["共享屏幕等于把密码和验证码公开：短信弹窗会直接出现在画面里。","发现不对要退出时，退回主屏没用，要点“停止共享”；被远程控制时拔卡或强制关机。","冒充客服理赔、注销账户、清查资产、导师带操作——要共享屏幕的，一律是诈骗。"],"guard":"屏幕一共享，密码验证码全裸奔——“停止共享”四个字，关键时刻能救你的存款。"},"crime":"","difficulty":2,"clueCount":8},{"id":"ch02-03","chapter":2,"index":3,"seed":2203,"title":"FaceTime 里的警官","article":331,"scene":"商务写字楼二十一层的一间小会议室，白板和投影都没用过。","case":"FaceTime 响了，来电显示是“某市公安局”。接通后画面里坐着穿警服的人，报了姓名警号，出示一张带他身份证号的《刑事逮捕令》。对方说案件涉密，不得告知任何人，要他把名下资金转入“安全账户”清查流水。三个小时后，卡里七万多没了。","zones":["会议桌","投影幕","窗边洽谈位","文件柜","门口签到台","茶水台","打印机","电话间","走廊"],"rows":["最里一排","窗边","投影下","会议桌前","文件柜前","茶水台前","打印机前","签到台外","最外一排"],"roles":[{"name":"假警官","camp":"骗","icon":"pianzi","desc":"视频里穿警服、报出姓名警号的人"},{"name":"书记员","camp":"骗","icon":"pianzi","desc":"负责发“刑事逮捕令”照片"},{"name":"资金清查员","camp":"骗","icon":"pianzi","desc":"负责“清查流水”并指引转账"},{"name":"白领小赵","camp":"受害","icon":"shouhaizhe","desc":"接到 FaceTime 就慌了的上班族"},{"name":"反诈民警","camp":"警","icon":"jingcha","desc":"接到 96110 预警上门的真警官"},{"name":"前台","camp":"路","icon":"luren","desc":"见过小赵拿着手机急匆匆出门"},{"name":"保洁大姐","camp":"路","icon":"luren","desc":"打扫会议室时听见了“涉嫌洗钱”"},{"name":"隔壁公司主管","camp":"路","icon":"luren","desc":"借过会议室给小赵"},{"name":"外卖员","camp":"路","icon":"luren","desc":"中午把餐送到会议室门口"}],"given":[{"name":"隔壁公司主管","r":1,"c":0},{"name":"书记员","r":3,"c":7}],"clues":[{"t":"监控拍到 外卖员 就站在第 6 排 茶水台前。","k":"row","a":["外卖员"],"p":[5]},{"t":"反诈民警 从头到尾没离开过第 8 排 签到台外。","k":"row","a":["反诈民警"],"p":[7]},{"t":"资金清查员 就站在 反诈民警 左手边一格。","k":"left1","a":["资金清查员","反诈民警"],"p":[]},{"t":"假警官 就站在 白领小赵 左手边一格。","k":"left1","a":["假警官","白领小赵"],"p":[]},{"t":"反诈民警 的区号比 前台 大 1。","k":"zonediff","a":["反诈民警","前台"],"p":[1]},{"t":"隔壁公司主管 的区号比 外卖员 大 4。","k":"zonediff","a":["隔壁公司主管","外卖员"],"p":[4]},{"t":"前台 的区号，正好等于 保洁大姐 的排号。","k":"zonerow","a":["前台","保洁大姐"],"p":[]},{"t":"假警官 的排号，正好等于 白领小赵 的区号。","k":"rowzone","a":["假警官","白领小赵"],"p":[]}],"sol":{"假警官":{"r":2,"c":5},"书记员":{"r":3,"c":7},"资金清查员":{"r":4,"c":2},"白领小赵":{"r":0,"c":6},"反诈民警":{"r":7,"c":3},"前台":{"r":6,"c":8},"保洁大姐":{"r":8,"c":1},"隔壁公司主管":{"r":1,"c":0},"外卖员":{"r":5,"c":4}},"victim":"白领小赵","scammer":"假警官","answer":{"victim":{"name":"白领小赵","row":1,"col":7,"zone":3,"zoneName":"窗边洽谈位"},"scammer":{"name":"假警官","row":3,"col":6,"zone":2,"zoneName":"投影幕"}},"hints":["受害者躲在第 3 区 窗边洽谈位，顺着这一区的行列往下推。","主骗在第 3 排、第 6 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪一句话暴露了他不是真警察？","options":["“你涉嫌一起洗钱案件。”","“把资金转入安全账户，清查后才能自证清白。”","“这件事涉密，不能告诉任何人。”","“我们会给你发送电子文书。”"],"answer":1,"why":"公安机关不存在“安全账户”，也不会让你转账“自证清白”。这句话是把钱要走的全部理由，其余都是气氛。"},"review":{"points":["公检法不会电话、视频、网络办案，没有安全账户，不会要求转账自证清白。","FaceTime / 来电显示的昵称可以随便改，看到“官方”字样务必从官方渠道回拨核实。","“不得告知任何人”是骗局的保险丝——一旦挂断问一句，局就散了。"],"guard":"自称公检法或平台客服的来电，从官方渠道回拨核实，别信来电显示。","crime":"冒充国家机关工作人员招摇撞骗、诈骗，均要追究刑事责任。"},"crime":"冒充国家机关工作人员招摇撞骗、诈骗，均要追究刑事责任。","difficulty":1,"clueCount":8},{"id":"ch02-04","chapter":2,"index":4,"seed":2204,"title":"家长群里的班主任","article":361,"scene":"实验小学门口的接送区，下午四点挤满了家长和电动车。","case":"下午班里弹出通知：“本学期资料费每人 480，扫码转我账户，今天截止。”头像和名字都跟班主任一模一样，紧接着就有家长接龙“已交”。十几分钟里有三十多位家长转了钱，等真的班主任下课看到消息，骗子早已退群。","zones":["校门口","接送等候区","文具店","保安亭","公告栏","花坛边","车棚","报刊栏","家长休息亭"],"rows":["最里一排","校门内侧","公告栏前","接送区里","保安亭前","休息亭前","文具店前","车棚前","最外一排"],"roles":[{"name":"假班主任","camp":"骗","icon":"pianzi","desc":"头像昵称和真老师一模一样的账号"},{"name":"接龙的托","camp":"骗","icon":"pianzi","desc":"第一个发“已交”的家长，其实是一伙的"},{"name":"刘姐","camp":"受害","icon":"shouhaizhe","desc":"看到通知就转钱的学生家长"},{"name":"真班主任","camp":"路","icon":"luren","desc":"上课期间没看手机的老师"},{"name":"社区民警","camp":"警","icon":"jingcha","desc":"来学校做反诈宣讲的警官"},{"name":"保安老李","camp":"路","icon":"luren","desc":"守着校门，见过谁在群里发通知"},{"name":"文具店老板","camp":"路","icon":"luren","desc":"见过家长来问“二维码交了没”"},{"name":"另一位家长","camp":"路","icon":"luren","desc":"接龙的第二个人"},{"name":"报刊亭大爷","camp":"路","icon":"luren","desc":"天天在门口，认得所有常来的家长"}],"given":[{"name":"接龙的托","r":7,"c":2},{"name":"假班主任","r":5,"c":3}],"clues":[{"t":"刘姐 那会儿人在第 9 区 家长休息亭。","k":"zone","a":["刘姐"],"p":[8]},{"t":"保安老李 紧挨着 真班主任 的北边一排。","k":"above1","a":["保安老李","真班主任"],"p":[]},{"t":"文具店老板 紧挨着 保安老李 的北边一排。","k":"above1","a":["文具店老板","保安老李"],"p":[]},{"t":"刘姐 就站在 保安老李 左手边一格。","k":"left1","a":["刘姐","保安老李"],"p":[]},{"t":"文具店老板 就站在 接龙的托 左手边一格。","k":"left1","a":["文具店老板","接龙的托"],"p":[]},{"t":"另一位家长 就站在 真班主任 左手边一格。","k":"left1","a":["另一位家长","真班主任"],"p":[]},{"t":"真班主任 的区号比 社区民警 小 4。","k":"zonediff","a":["真班主任","社区民警"],"p":[-4]},{"t":"接龙的托 的区号，正好等于 刘姐 的排号。","k":"zonerow","a":["接龙的托","刘姐"],"p":[]}],"sol":{"假班主任":{"r":5,"c":3},"接龙的托":{"r":7,"c":2},"刘姐":{"r":6,"c":7},"真班主任":{"r":3,"c":6},"社区民警":{"r":0,"c":4},"保安老李":{"r":2,"c":8},"文具店老板":{"r":1,"c":1},"另一位家长":{"r":8,"c":5},"报刊亭大爷":{"r":4,"c":0}},"victim":"刘姐","scammer":"假班主任","answer":{"victim":{"name":"刘姐","row":7,"col":8,"zone":9,"zoneName":"家长休息亭"},"scammer":{"name":"假班主任","row":6,"col":4,"zone":5,"zoneName":"公告栏"}},"hints":["受害者在第 7 排 文具店前，拿它去撞别人的排号。","主骗在第 6 排、第 4 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪个细节最能说明这个收款有问题？","options":["“请扫码转到指定账户。”","“今天截止，名额有限。”","“已经交的家长在群里接个龙。”","“金额是每人 480 元。”"],"answer":0,"why":"学校收费走的是对公账户或官方平台，从不私发个人收款码。群里临时出现的二维码，先私聊老师核实，再决定要不要转。"},"review":{"points":["凡是在群里临时发二维码催交“资料费、体检费、保险费”的，先核实再转钱。","克隆头像昵称没有门槛，混进家长群后潜伏观察是这类骗局的第一步。","群里带头“已交”的可能是同伙，从众压力本身就是话术的一部分。"],"guard":"看到群里催交钱，先私聊老师问一句——老师不会因为你多问一句而生气。"},"crime":"","difficulty":1,"clueCount":8},{"id":"ch02-05","chapter":2,"index":5,"seed":2205,"title":"被绑架的留学生","article":362,"scene":"海外的城市，留学生公寓的一层：前台、自习室和洗衣房连成一片。","case":"小井接到自称国内警方的电话，说他涉嫌洗钱，发来带他身份信息的通缉令。对方要求案件保密，让他搬去酒店、断掉和家人朋友的联系，还要他按稿子拍摄“被绑架”的求救视频。视频传到国内，父母几乎崩溃，对方索要巨额赎金。而小井其实并没有遭到绑架。","zones":["公寓前台","洗衣房","自习室","快递柜","电梯厅","地下车库","花园长椅","便利店","门厅沙发"],"rows":["最里一排","自习室里","洗衣房前","电梯厅里","前台前","快递柜前","沙发区里","便利店里","最外一排"],"roles":[{"name":"假警官李","camp":"骗","icon":"pianzi","desc":"冒充国内公检法，发伪造通缉令"},{"name":"复核专员","camp":"骗","icon":"pianzi","desc":"要求“案件涉密、断联、转移”"},{"name":"赎金联系人","camp":"骗","icon":"pianzi","desc":"拿视频向国内家长勒索的人"},{"name":"留学生小井","camp":"受害","icon":"shouhaizhe","desc":"被哄骗到酒店、被迫拍下视频的学生"},{"name":"国内反诈民警","camp":"警","icon":"jingcha","desc":"协调使领馆核实情况的警官"},{"name":"同楼同学","camp":"路","icon":"luren","desc":"发现小井两天没回宿舍"},{"name":"公寓前台安娜","camp":"路","icon":"luren","desc":"见过小井慌张出门"},{"name":"宿管阿姨","camp":"路","icon":"luren","desc":"见过小井收拾行李说要“外出几天”"},{"name":"隔壁研究员","camp":"路","icon":"luren","desc":"曾提醒过小井电话可能有问题"}],"given":[{"name":"隔壁研究员","r":5,"c":8},{"name":"留学生小井","r":2,"c":5}],"clues":[{"t":"隔壁研究员 紧挨着 赎金联系人 的北边一排。","k":"above1","a":["隔壁研究员","赎金联系人"],"p":[]},{"t":"留学生小井 紧挨着 复核专员 的北边一排。","k":"above1","a":["留学生小井","复核专员"],"p":[]},{"t":"赎金联系人 紧挨着 公寓前台安娜 的北边一排。","k":"above1","a":["赎金联系人","公寓前台安娜"],"p":[]},{"t":"复核专员 就站在 赎金联系人 左手边一格。","k":"left1","a":["复核专员","赎金联系人"],"p":[]},{"t":"宿管阿姨 就站在 同楼同学 左手边一格。","k":"left1","a":["宿管阿姨","同楼同学"],"p":[]},{"t":"公寓前台安娜 就站在 隔壁研究员 左手边一格。","k":"left1","a":["公寓前台安娜","隔壁研究员"],"p":[]},{"t":"同楼同学 就站在 假警官李 左手边一格。","k":"left1","a":["同楼同学","假警官李"],"p":[]},{"t":"假警官李 的区号比 公寓前台安娜 大 4。","k":"zonediff","a":["假警官李","公寓前台安娜"],"p":[4]},{"t":"留学生小井 的区号，正好等于 国内反诈民警 的排号。","k":"zonerow","a":["留学生小井","国内反诈民警"],"p":[]}],"sol":{"假警官李":{"r":4,"c":4},"复核专员":{"r":3,"c":0},"赎金联系人":{"r":6,"c":1},"留学生小井":{"r":2,"c":5},"国内反诈民警":{"r":1,"c":6},"同楼同学":{"r":8,"c":3},"公寓前台安娜":{"r":7,"c":7},"宿管阿姨":{"r":0,"c":2},"隔壁研究员":{"r":5,"c":8}},"victim":"留学生小井","scammer":"假警官李","answer":{"victim":{"name":"留学生小井","row":3,"col":6,"zone":2,"zoneName":"洗衣房"},"scammer":{"name":"假警官李","row":5,"col":5,"zone":5,"zoneName":"电梯厅"}},"hints":["受害者躲在第 2 区 洗衣房，顺着这一区的行列往下推。","主骗在第 5 排、第 5 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪一句话暴露了这是“虚拟绑架”？","options":["“你涉嫌一起跨境洗钱案件。”","“先不要联系家人，案件涉密。”","“我们给你发一份电子文书。”","“配合调查后会给你一个证明。”"],"answer":1,"why":"要求断绝联系是整个骗局的结构性前提：只要还打得通视频电话，真相就会露馅。真正被绑架的人，绑匪反而急于让你联系家人要钱。"},"review":{"points":["公安机关不会要求你断联、躲起来，也不会让学生自拍“被绑架”视频。","家长收到勒索视频先做一件事：通过多种渠道联系孩子本人，并联系学校与使领馆。","驻外使领馆与国内反诈部门可以协助核实，不要按对方给的时间表走。"],"guard":"凡是要求你“别告诉任何人”的办案，都是骗局。真出事的时候，第一时间联系家人和警方。"},"crime":"","difficulty":1,"clueCount":9},{"id":"ch02-06","chapter":2,"index":6,"seed":2206,"title":"提不出来的收益","article":212,"scene":"新区写字楼 A 座十五层，挂着“数字资产运营中心”的玻璃门。","case":"老宋跟着“带单老师”在一个数字资产平台里操作，账户上很快有了几万块的账面收益。想提现时系统弹出“账户异常、权限受限”，在线客服说需要缴纳核验费、解冻押金才能放行。第一笔转出去之后，接着是“二次管控”“系统升级”，一笔又一笔，直到他把工程款也搭了进去。","zones":["接待前台","工位区","贵宾洽谈室","茶水间","记账电脑位","资料柜","打印区","逃生通道","走廊窗边"],"rows":["最里一排","洽谈室里","工位深处","记账位前","洽谈桌前","资料柜前","茶水台前","前台外","最外一排"],"roles":[{"name":"带单老师","camp":"骗","icon":"pianzi","desc":"群里天天晒收益的人"},{"name":"在线客服","camp":"骗","icon":"pianzi","desc":"负责“处理提现异常”的人"},{"name":"风控专员","camp":"骗","icon":"pianzi","desc":"负责收解冻费、核验费"},{"name":"工程老板老宋","camp":"受害","icon":"shouhaizhe","desc":"看到账面收益想提现的人"},{"name":"经侦民警","camp":"警","icon":"jingcha","desc":"梳理资金流向的警官"},{"name":"前台小刘","camp":"路","icon":"luren","desc":"见过不少人来问“什么时候能提”"},{"name":"保洁阿姨","camp":"路","icon":"luren","desc":"打扫时见过满地的转账凭条"},{"name":"隔壁公司会计","camp":"路","icon":"luren","desc":"提醒过对面公司“不像正经生意”"},{"name":"外卖员","camp":"路","icon":"luren","desc":"一天往这层送好几趟咖啡"}],"given":[{"name":"经侦民警","r":8,"c":7},{"name":"保洁阿姨","r":2,"c":6}],"clues":[{"t":"风控专员 从头到尾没离开过第 1 排 最里一排。","k":"row","a":["风控专员"],"p":[0]},{"t":"保洁阿姨 紧挨着 带单老师 的北边一排。","k":"above1","a":["保洁阿姨","带单老师"],"p":[]},{"t":"前台小刘 紧挨着 在线客服 的北边一排。","k":"above1","a":["前台小刘","在线客服"],"p":[]},{"t":"隔壁公司会计 就站在 带单老师 左手边一格。","k":"left1","a":["隔壁公司会计","带单老师"],"p":[]},{"t":"外卖员 就站在 风控专员 左手边一格。","k":"left1","a":["外卖员","风控专员"],"p":[]},{"t":"在线客服 就站在 外卖员 左手边一格。","k":"left1","a":["在线客服","外卖员"],"p":[]},{"t":"风控专员 的区号比 隔壁公司会计 大 6。","k":"zonediff","a":["风控专员","隔壁公司会计"],"p":[6]},{"t":"前台小刘 的区号比 隔壁公司会计 大 2。","k":"zonediff","a":["前台小刘","隔壁公司会计"],"p":[2]},{"t":"隔壁公司会计 的排号，正好等于 外卖员 的区号。","k":"rowzone","a":["隔壁公司会计","外卖员"],"p":[]}],"sol":{"带单老师":{"r":3,"c":5},"在线客服":{"r":5,"c":1},"风控专员":{"r":0,"c":3},"工程老板老宋":{"r":1,"c":0},"经侦民警":{"r":8,"c":7},"前台小刘":{"r":4,"c":8},"保洁阿姨":{"r":2,"c":6},"隔壁公司会计":{"r":6,"c":4},"外卖员":{"r":7,"c":2}},"victim":"工程老板老宋","scammer":"带单老师","answer":{"victim":{"name":"工程老板老宋","row":2,"col":1,"zone":1,"zoneName":"接待前台"},"scammer":{"name":"带单老师","row":4,"col":6,"zone":5,"zoneName":"记账电脑位"}},"hints":["受害者躲在第 1 区 接待前台，顺着这一区的行列往下推。","主骗在第 4 排、第 6 列。他一定位，剩下的人会连锁归位。"],"pick":{"q":"哪句话证明这是假平台？","options":["“老师带单，跟着操作就行。”","“提现要先缴纳解冻押金。”","“收益每天都会更新。”","“可以帮你申请更高的权限。”"],"answer":1,"why":"提现是平台把你自己的钱给你，不需要先导一笔钱进去。要求“先交钱才能取钱”的平台，从第一步起就没打算给过。"},"review":{"points":["提现让你先交钱的，全是诈骗：解冻费、核验费、税费、保证金，名字不同，动作一样。","账面收益只是一个数字，能到达你银行卡的才算利润。","发现异常立刻停止一切转账；多转一笔，追回的可能性就少一分。"],"guard":"凡是提现还要先交钱的，百分百是诈骗——别信“最后一笔”。"},"crime":"","difficulty":1,"clueCount":9}]};
+const CHARS = {"骗":"data:image/png;base64,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","受害":"data:image/png;base64,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","警":"data:image/png;base64,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","路":"data:image/png;base64,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"};
+const SAVE_KEY = "shimian.save.v1";
+const CAMPCOLOR = {"骗":"var(--scam)","受害":"var(--victim)","警":"var(--police)","路":"var(--road)"};
+
+/* ------------------------------------------------------------------ 存档 */
+function loadSave(){
+  try{ return JSON.parse(localStorage.getItem(SAVE_KEY)||"{}"); }catch(e){ return {}; }
+}
+function writeSave(s){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(s)); }catch(e){} }
+let SAVE = loadSave();
+
+/* ------------------------------------------------------------------ 工具 */
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+function zoneOf(r,c){ return Math.floor(r/3)*3+Math.floor(c/3); }
+function zName(lv,i){ return (i+1)+"·"+lv.zones[i]; }
+function starsHTML(n){
+  let s=""; for(let i=0;i<3;i++) s += (i<n?"★":"☆");
+  return '<span class="stars">'+s+'</span>';
+}
+function fmtTime(sec){
+  const m=Math.floor(sec/60), s=sec%60;
+  return (m?m+"分":"")+s+"秒";
+}
+function isUnlocked(idx){
+  if(idx===0) return true;
+  const prev = DATA.levels[idx-1];
+  return !!(SAVE[prev.id] && SAVE[prev.id].solved);
+}
+
+/* ------------------------------------------------------------------ 状态 */
+let CUR=null, SEL=null, placed={}, used=new Set(), hints=0, tries=0, t0=0, timer=null, sec=0;
+
+/* ------------------------------------------------------------------ 首页 */
+function renderHome(){
+  const host=document.getElementById("pageHome");
+  const solvedN = DATA.levels.filter(l=>SAVE[l.id]&&SAVE[l.id].solved).length;
+  const starN = DATA.levels.reduce((a,l)=>a+((SAVE[l.id]&&SAVE[l.id].stars)||0),0);
+  let h = '<div class="hero">'+
+    '<h1>把九个人摆回他们该在的位置，骗子就露出来了</h1>'+
+    '<p>每一关是一张案发现场的 9×9 平面图：九个真人站在九个格子里，'+
+    '<b>每一排、每一列、每一个 3×3 区块里，都恰好只有一个人</b>。'+
+    '读线索，把人一个一个摆回去——摆对了，受害者和主骗的坐标自己就浮出来了。</p>'+
+    '<div class="rules">'+
+      '<span class="chip">一局 <b>9 个人</b></span>'+
+      '<span class="chip">一条铁律：<b>排 / 列 / 区各一人</b></span>'+
+      '<span class="chip">每关线索 <b>已验证唯一解</b></span>'+
+      '<span class="chip">不用猜，<b>纯逻辑可推</b></span>'+
+    '</div>'+
+    '<div class="stat"><span>已结案 '+solvedN+' / '+DATA.levels.length+'</span>'+
+    '<span>累计星级 '+starN+' / '+(DATA.levels.length*3)+'</span>'+
+    '<span>题材全部来自《人间防骗指南》371 篇真实骗局拆解</span></div>'+
+    '<div class="row"><button class="btn main" id="daily">今日一案</button>'+
+    '<button class="btn ghost" id="randLv">随便挑一关</button></div>'+
+  '</div>';
+
+  DATA.chapters.forEach(ch=>{
+    h += '<div class="chap"><h2>第 '+ch.id+' 章 · '+ch.name+'</h2><span>'+ch.sub+'</span></div>';
+    h += '<div class="cards">';
+    DATA.levels.forEach((lv,i)=>{
+      if(lv.chapter!==ch.id) return;
+      const rec = SAVE[lv.id]||{};
+      const open = isUnlocked(i);
+      h += '<button class="card" data-idx="'+i+'">'+
+        '<div class="no">'+lv.id.toUpperCase()+' · 线索 '+lv.clueCount+' 条 · '+
+          '烧脑 '+"★".repeat(Math.min(4,lv.difficulty))+'</div>'+
+        '<div class="t">'+lv.title+'</div>'+
+        '<div class="s">'+lv.scene+'</div>'+
+        '<div class="foot">'+starsHTML(rec.stars||0)+
+          (rec.best?('<span>最好 '+fmtTime(rec.best)+'</span>'):'<span>未结案</span>')+'</div>'+
+        (open?"":'<div class="lock">先解开上一关</div>')+
+      '</button>';
+    });
+    h += '</div>';
+  });
+  h += '<div class="note">灵感来自 Murdle 家族的 Murdoku 玩法（数独式网格推理），'+
+       '只借机制，题面与案情全部由本项目的骗局拆解内容生成，非改编原题。<br>'+
+       '真遇到正在发生的转账：先挂电话，打 110 或 96110。</div>';
+  host.innerHTML=h;
+  host.querySelectorAll(".card").forEach(b=>{
+    b.onclick=()=>{ const i=+b.dataset.idx; if(!isUnlocked(i)) return; startLevel(DATA.levels[i]); };
+  });
+  // 今日一案：按日期取一关，同一天同一关
+  const day = Math.floor(Date.now()/864e5);
+  document.getElementById("daily").onclick=()=>{
+    startLevel(DATA.levels[day % DATA.levels.length]);
+  };
+  document.getElementById("randLv").onclick=()=>{
+    const pool = DATA.levels.filter((_,i)=>isUnlocked(i));
+    startLevel(pool[Math.floor(Math.random()*pool.length)]);
+  };
+}
+
+/* ------------------------------------------------------------------ 关卡 */
+function startLevel(lv){
+  CUR=lv; SEL=null; placed={}; used=new Set(); hints=0; tries=0; sec=0;
+  lv.given.forEach(g=>{ placed[g.name]={r:g.r,c:g.c}; });
+  t0=Date.now(); clearInterval(timer);
+  timer=setInterval(()=>{ sec=Math.floor((Date.now()-t0)/1000);
+    const e=document.getElementById("clk"); if(e) e.textContent=fmtTime(sec); },500);
+  document.getElementById("pageHome").classList.add("hidden");
+  document.getElementById("pagePlay").classList.remove("hidden");
+  document.getElementById("pagePlay").innerHTML=playHTML(lv);
+  bindPlay();
+  renderGrid(); renderRoster(); renderClues();
+}
+
+function playHTML(lv){
+  return ''+
+  '<div class="case">'+
+    '<div class="h">案情 · '+lv.id.toUpperCase()+' 《'+lv.title+'》</div>'+
+    '<div class="c">'+lv.case+'</div>'+
+    '<div class="scene">现场：'+lv.scene+'</div>'+
+  '</div>'+
+  '<div class="play-grid">'+
+    '<div class="boardbox">'+
+      '<div class="board">'+
+        '<div class="rowbar">'+Array.from({length:9},(_,i)=>
+          '<div title="'+(i+1)+' 排：'+lv.rows[i]+'">'+(i+1)+'</div>').join('')+'</div>'+
+        '<div>'+
+          '<div class="colbar">'+Array.from({length:9},(_,i)=>'<div>'+(i+1)+'</div>').join('')+'</div>'+
+          '<div class="grid9" id="grid"></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="roster">'+
+        '<h3>九个人 · 点一个人，再点一个格子</h3>'+
+        '<div class="people" id="people"></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="side">'+
+      '<h3>现场线索</h3>'+
+      '<div class="meta"><span id="clk">0 秒</span><span>已摆 <b id="cnt">0</b>/9</span>'+
+        '<span>提示剩 <b id="hleft">2</b> 次</span></div>'+
+      '<div class="tools">'+
+        '<button class="btn" id="undo">拿回上一个</button>'+
+        '<button class="btn" id="clear">全部撤回</button>'+
+        '<button class="btn" id="hint">用一次提示</button>'+
+        '<button class="btn main" id="submit">提交，锁定答案</button>'+
+      '</div>'+
+      '<div id="clues"></div>'+
+      '<div id="hintArea"></div>'+
+      '<h3 style="margin-top:14px">区块对照</h3>'+
+      '<div class="note" style="margin-top:0">'+lv.zones.map((z,i)=>zName(lv,i)).join(' ｜ ')+
+        '<br>'+lv.rows.map((r,i)=>(i+1)+' 排 '+r).join(' ｜ ')+'</div>'+
+    '</div>'+
+  '</div>';
+}
+
+let lastPlaced=[];
+function bindPlay(){
+  document.getElementById("undo").onclick=()=>{
+    if(!lastPlaced.length) return;
+    const n=lastPlaced.pop(); delete placed[n]; renderGrid(); renderRoster();
+  };
+  document.getElementById("clear").onclick=()=>{
+    placed={}; lastPlaced=[]; CUR.given.forEach(g=>placed[g.name]={r:g.r,c:g.c});
+    renderGrid(); renderRoster();
+  };
+  document.getElementById("hint").onclick=()=>{
+    if(hints>=2) return;
+    hints++; document.getElementById("hleft").textContent=2-hints;
+    const box=document.getElementById("hintArea");
+    box.innerHTML='<div class="hintbox">提示 '+hints+'：'+CUR.hints[hints-1]+'</div>';
+  };
+  document.getElementById("submit").onclick=doSubmit;
+}
+
+function cellKey(r,c){ return r+"_"+c; }
+
+function renderGrid(){
+  const g=document.getElementById("grid"); g.innerHTML="";
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++){
+    const d=document.createElement("div");
+    d.className="cell"+(zoneOf(r,c)%2?" zb":"");
+    d.dataset.r=r; d.dataset.c=c;
+    const occupant=Object.keys(placed).find(n=>placed[n].r===r&&placed[n].c===c);
+    if(occupant){
+      const role=CUR.roles.find(x=>x.name===occupant);
+      const isGiven=CUR.given.some(x=>x.name===occupant);
+      const img=document.createElement("img"); img.src=CHARS[role.camp]; d.appendChild(img);
+      const nm=document.createElement("div"); nm.className="nm"; nm.textContent=occupant;
+      d.appendChild(nm);
+      if(isGiven){ const b=document.createElement("div"); b.className="badge"; b.textContent="给定"; d.appendChild(b); }
+      if(occupant===CUR.scammer) d.style.boxShadow="inset 0 0 0 2px #ff5b5b";
+    } else if(r%3===0&&c%3===0){
+      const z=document.createElement("div"); z.className="ztag";
+      z.textContent=zName(CUR,zoneOf(r,c)); d.appendChild(z);
+    }
+    d.onclick=()=>onCell(r,c,d);
+    g.appendChild(d);
+  }
+  const n=Object.keys(placed).length;
+  const e=document.getElementById("cnt"); if(e) e.textContent=n;
+  // 选中人时高亮可用格
+  if(SEL){
+    for(const dd of g.children){
+      const rr=+dd.dataset.r, cc=+dd.dataset.c;
+      if(conflictFor(SEL,rr,cc)) dd.classList.add("locked"); else dd.classList.add("hl");
+    }
+  }
+}
+
+function conflictFor(name,r,c){
+  const z=zoneOf(r,c);
+  return Object.keys(placed).some(n=>{
+    if(n===name) return false;
+    const p=placed[n];
+    return p.r===r||p.c===c||zoneOf(p.r,p.c)===z;
+  });
+}
+
+function onCell(r,c,d){
+  const occupant=Object.keys(placed).find(n=>placed[n].r===r&&placed[n].c===c);
+  if(!SEL){
+    if(occupant){
+      if(CUR.given.some(x=>x.name===occupant)){ toast("这一位是开局就站好的，不能动"); return; }
+      SEL=occupant; delete placed[occupant];
+      lastPlaced=lastPlaced.filter(x=>x!==occupant);
+      renderGrid(); renderRoster();
+    }
+    return;
+  }
+  if(occupant){ d.classList.add("conflict"); setTimeout(()=>d.classList.remove("conflict"),320); toast("这格已经有人了"); return; }
+  if(conflictFor(SEL,r,c)){
+    d.classList.add("conflict"); setTimeout(()=>d.classList.remove("conflict"),320);
+    toast("同一排 / 同一列 / 同一个区块里只能站一个人"); return;
+  }
+  placed[SEL]={r:r,c:c}; lastPlaced.push(SEL);
+  SEL=null; renderGrid(); renderRoster();
+  if(Object.keys(placed).length===9) toast("九个人都站好了，可以提交");
+}
+
+function renderRoster(){
+  const host=document.getElementById("people"); host.innerHTML="";
+  CUR.roles.forEach(role=>{
+    const done=!!placed[role.name];
+    const b=document.createElement("div");
+    b.className="p"+(SEL===role.name?" sel":"")+(done?" done":"");
+    b.dataset.camp=role.camp;
+    b.innerHTML='<img src="'+CHARS[role.camp]+'"><div class="n">'+role.name+'</div>'+
+      '<div class="d">'+role.desc+'</div>'+
+      '<div class="ring" style="box-shadow:inset 0 0 0 1px '+CAMPCOLOR[role.camp]+'33"></div>';
+    b.onclick=()=>{
+      if(placed[role.name]){
+        if(CUR.given.some(x=>x.name===role.name)){ toast("这一位是开局就站好的，不能动"); return; }
+        delete placed[role.name]; lastPlaced=lastPlaced.filter(x=>x!==role.name);
+        SEL=role.name;
+      } else {
+        SEL = (SEL===role.name)?null:role.name;
+      }
+      renderGrid(); renderRoster();
+    };
+    host.appendChild(b);
+  });
+}
+
+function renderClues(){
+  const host=document.getElementById("clues"); host.innerHTML="";
+  CUR.clues.forEach((cl,i)=>{
+    const d=document.createElement("div");
+    d.className="clue"+(used.has(i)?" used":"");
+    d.innerHTML='<div class="box">'+(used.has(i)?"✓":"")+'</div><div class="t">'+cl.t+'</div>';
+    d.onclick=()=>{ used.has(i)?used.delete(i):used.add(i); renderClues(); };
+    host.appendChild(d);
+  });
+}
+
+function toast(msg){
+  let t=document.getElementById("toast");
+  if(!t){ t=document.createElement("div"); t.id="toast";
+    t.style.cssText="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:99;"+
+      "background:#1d2b47;border:1px solid #3c587f;color:#e8eef8;padding:9px 16px;border-radius:10px;"+
+      "font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.4)";
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.display="block";
+  clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.display="none"; },1900);
+}
+
+/* ------------------------------------------------------------------ 判定 */
+function doSubmit(){
+  const miss=CUR.roles.map(r=>r.name).filter(n=>!placed[n]);
+  if(miss.length){ toast("还有 "+miss.length+" 个人没安排位置"); return; }
+  tries++;
+  const ok=CUR.roles.every(r=>{
+    const s=CUR.sol[r.name]; const p=placed[r.name];
+    return s.r===p.r && s.c===p.c;
+  });
+  if(!ok){ verdict(false); return; }
+  clearInterval(timer);
+  const rec=SAVE[CUR.id]||{};
+  let st=1;
+  if(tries===1&&hints===0) st=3;
+  else if(tries<=3&&hints<=1) st=2;
+  if(st>(rec.stars||0)) rec.stars=st;
+  if(!rec.best||sec<rec.best) rec.best=sec;
+  rec.solved=true; SAVE[CUR.id]=rec; writeSave(SAVE);
+  verdict(true,st);
+}
+
+function verdict(ok,st){
+  const lv=CUR;
+  const body = ok
+    ? '<div class="kv">九个人全部归位。<br>'+
+      '受害者 <b>'+lv.answer.victim.name+'</b> 在第 <b>'+lv.answer.victim.row+'</b> 排 · '+
+      '第 <b>'+lv.answer.victim.col+'</b> 列 · <b>'+lv.answer.victim.zoneName+'</b><br>'+
+      '主骗 <b>'+lv.answer.scammer.name+'</b> 在第 <b>'+lv.answer.scammer.row+'</b> 排 · '+
+      '第 <b>'+lv.answer.scammer.col+'</b> 列 · <b>'+lv.answer.scammer.zoneName+'</b></div>'+
+      '<div class="kv">用时 '+fmtTime(sec)+' · 提交 '+tries+' 次 · 提示 '+hints+' 次 '+
+      starsHTML(st)+'</div>'+
+      '<div class="row"><button class="btn main" id="goPick">最后一步：哪句话露了破绽</button>'+
+      '<button class="btn" id="goReview">直接看复盘</button></div>'
+    : '<div class="kv"><span class="warn">有人站错了。</span><br>'+
+      '我不告诉你是谁、也不告诉你是几个——回到现场重看线索吧。</div>'+
+      '<div class="row"><button class="btn main" id="back2">回去重摆</button>'+
+      '<button class="btn" id="giveUp">算了，看答案</button></div>';
+  openDlg(ok?"✅ 结案":"❌ 位置不成立", body);
+  if(ok){
+    document.getElementById("goPick").onclick=askPick;
+    document.getElementById("goReview").onclick=()=>showReview(false);
+  } else {
+    document.getElementById("back2").onclick=closeDlg;
+    document.getElementById("giveUp").onclick=()=>{ closeDlg(); showReview(false,true); };
+  }
+}
+
+function askPick(){
+  const lv=CUR, p=lv.pick;
+  let h='<div class="sub">'+p.q+'</div>';
+  p.options.forEach((o,i)=>{
+    h+='<div class="pick" data-i="'+i+'">'+(i+1)+'. '+o+'</div>';
+  });
+  h+='<div id="pickWhy"></div>';
+  openDlg("哪一句话露了破绽",h);
+  document.querySelectorAll(".pick").forEach(d=>{
+    d.onclick=()=>{
+      const i=+d.dataset.i;
+      if(!d.dataset.locked){
+        document.querySelectorAll(".pick").forEach(x=>x.dataset.locked="1");
+        d.classList.add(i===p.answer?"right":"wrong");
+        if(i!==p.answer) document.querySelector('.pick[data-i="'+p.answer+'"]').classList.add("right");
+        document.getElementById("pickWhy").innerHTML=
+          '<div class="guard">'+(i===p.answer?"✅ 正是这句。":"❌ 不是这句。")+p.why+'</div>'+
+          '<div class="row"><button class="btn main" id="goReview2">看完整复盘</button></div>';
+        document.getElementById("goReview2").onclick=()=>showReview(false);
+      }
+    };
+  });
+}
+
+function showReview(solvedFlag,gaveUp){
+  const lv=CUR;
+  let h='<div class="sub">《'+lv.title+'》· 现场还原</div>';
+  h+='<div class="mini">';
+  for(let r=0;r<9;r++) for(let c=0;c<9;c++){
+    const n=Object.keys(lv.sol).find(k=>lv.sol[k].r===r&&lv.sol[k].c===c);
+    let cls="",txt="";
+    if(n){
+      txt=n;
+      cls = n===lv.scammer?" s" : (n===lv.victim?" v":"");
+    }
+    h+='<div class="'+cls.trim()+'">'+txt+'</div>';
+  }
+  h+='</div>';
+  h+='<div class="kv">受害者 <b>'+lv.answer.victim.name+'</b>：第 '+
+     lv.answer.victim.row+' 排 · 第 '+lv.answer.victim.col+' 列 · '+lv.answer.victim.zoneName+
+     '<br>主骗 <b>'+lv.answer.scammer.name+'</b>：第 '+lv.answer.scammer.row+
+     ' 排 · 第 '+lv.answer.scammer.col+' 列 · '+lv.answer.scammer.zoneName+'</div>';
+  h+='<div class="kv" style="font-size:12.5px;line-height:1.9">'+
+     lv.roles.map(r=>'<span style="color:'+CAMPCOLOR[r.camp]+'">■</span> '+r.name+
+       '：第 '+(lv.sol[r.name].r+1)+' 排 第 '+(lv.sol[r.name].c+1)+' 列').join('<br>')+'</div>';
+  h+='<div style="margin-top:12px;font-size:13px;color:#d7e1f0">这套局的识别要点：</div><ul class="pts">'+
+     lv.review.points.map(p=>'<li>'+p+'</li>').join('')+'</ul>';
+  h+='<div class="guard">🛡️ '+lv.review.guard+'</div>';
+  if(lv.crime) h+='<div class="crime">⚖️ '+lv.crime+'（只讲罪名与后果方向，不写量刑年限）</div>';
+  h+='<div class="note">本关案情改编自《人间防骗指南》第 '+lv.article+
+     ' 篇拆解；人物与坐标是为这一局谜题虚构的，诈骗手法与识别要点来自原文。</div>';
+  const idx=DATA.levels.findIndex(x=>x.id===lv.id);
+  const next=DATA.levels[idx+1];
+  h+='<div class="row">'+(next?'<button class="btn main" id="nextLv">下一关：'+next.title+'</button>':'')+
+     '<button class="btn" id="backHome">回章节地图</button></div>';
+  openDlg("结案复盘",h);
+  const nb=document.getElementById("nextLv");
+  if(nb) nb.onclick=()=>{ closeDlg(); startLevel(next); };
+  document.getElementById("backHome").onclick=()=>{ closeDlg(); goHome(); };
+}
+
+/* ------------------------------------------------------------------ 弹窗 */
+function openDlg(title,html){
+  const host=document.getElementById("modalHost");
+  host.innerHTML='<div class="mask"><div class="dlg"><h2>'+title+'</h2>'+html+'</div></div>';
+  host.querySelector(".mask").onclick=e=>{ if(e.target.classList.contains("mask")) closeDlg(); };
+}
+function closeDlg(){ document.getElementById("modalHost").innerHTML=""; }
+
+/* ------------------------------------------------------------------ 导航 */
+function goHome(){
+  clearInterval(timer);
+  document.getElementById("pagePlay").classList.add("hidden");
+  document.getElementById("pageHome").classList.remove("hidden");
+  closeDlg(); renderHome(); window.scrollTo(0,0);
+}
+document.getElementById("btnHome").onclick=goHome;
+// 回知识库：从 game/ 出版是 ../index.html，从本地工作区出版要再上两级
+document.getElementById("btnLib").onclick=()=>{
+  location.href = location.pathname.indexOf("/game-adaptations/") >= 0
+    ? "../../index.html" : "../index.html";
+};
+// 选中的人卡在手上时，按 Esc 放回去（也方便触屏用户）
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && SEL){ SEL=null; renderGrid(); renderRoster(); }
+});
+document.getElementById("btnReset").onclick=()=>{
+  if(!confirm("清空本机上的结案记录和星级？")) return;
+  SAVE={}; writeSave(SAVE); goHome();
+};
+
+renderHome();
+</script>
+</body>
+</html>
