@@ -33,12 +33,12 @@ F_ROOT, F_CAT, F_ART, F_PT = load_font(26), load_font(17), load_font(13), load_f
 
 # ---------- 树节点 ----------
 class N:
-    __slots__ = ("t", "kids", "depth", "x", "y", "w", "h", "bg", "fg", "font", "maxchars", "label")
-    def __init__(self, t, depth, kids=None):
-        self.t, self.depth, self.kids = t, depth, kids or []
+    __slots__ = ("t", "kids", "depth", "x", "y", "w", "h", "bg", "fg", "outline", "font", "maxchars", "label", "hot")
+    def __init__(self, t, depth, kids=None, hot=False):
+        self.t, self.depth, self.kids, self.hot = t, depth, kids or [], hot
         self.x = self.y = 0.0
         self.w = self.h = 0
-        self.bg, self.fg, self.font, self.maxchars = None, None, None, 0
+        self.bg = self.fg = self.outline = self.font = self.maxchars = self.label = None
 
 PALETTE = {
     0: ("#1f4e79", "#ffffff", F_ROOT, 30),
@@ -66,6 +66,9 @@ def measure(font, s):
 def style(node):
     bg, fg, font, mc = PALETTE[min(node.depth, 3)]
     node.bg, node.fg, node.font, node.maxchars = bg, fg, font, mc
+    node.outline = "#c5cdd6"
+    if node.hot:
+        node.bg, node.fg, node.outline = "#fde8e8", "#b42318", "#e08a82"
     node.label = strip_emoji(trunc(node.t, mc))
     if not node.label:
         node.label = trunc(node.t, mc)
@@ -107,29 +110,39 @@ def bounds(node):
     return xs
 
 # ---------- 绘制 ----------
-def draw_tree(root, path, title):
+TITLE_H = 42  # 标题条高度；所有节点 y 均相对标题条下方计算
+
+def draw_tree(root, path, title, legend=True):
     style(root)
     layout.cur = 0
     layout(root)
     assign_x(root, 20)
     maxw, maxh = bounds(root)
-    W, H = int(maxw + 40), int(maxh + 80)
+    W, H = int(maxw + 40), int(maxh + 80 + TITLE_H)
     img = Image.new("RGB", (W, H), "#fafbfc")
     d = ImageDraw.Draw(img)
 
     # 标题条
-    d.rectangle([0, 0, W, 42], fill="#1f4e79")
+    d.rectangle([0, 0, W, TITLE_H], fill="#1f4e79")
     d.text((16, 10), title, font=F_CAT, fill="#ffffff")
+    if legend:
+        # 右侧图例
+        ly = 14
+        d.rounded_rectangle([W - 230, ly, W - 210, ly + 16], radius=4, fill="#fde8e8", outline="#e08a82", width=1)
+        d.text((W - 204, 11), "红色 = 涉刑风险（碰了不只是丢钱）", font=F_PT, fill="#ffbdb7")
 
     def draw_node(n):
+        ny = n.y + TITLE_H  # 节点框顶
+        cy = ny + n.h / 2   # 节点中心（连线用，与框对齐）
         for k in n.kids:
-            x1, y1 = n.x + n.w, n.y + n.h / 2
-            x2, y2 = k.x, k.y + k.h / 2
+            ky = k.y + TITLE_H + k.h / 2
+            x1, y1 = n.x + n.w, cy
+            x2, y2 = k.x, ky
             mid = (x1 + x2) / 2
             # 平滑折线
-            d.line([(x1, y1), (mid, y1), (mid, y2), (x2, y2)], fill="#9aa4b2", width=2)
-        x0, y0 = n.x, n.y + 42
-        d.rounded_rectangle([x0, y0, x0 + n.w, y0 + n.h], radius=8, fill=n.bg, outline="#c5cdd6", width=1)
+            d.line([(x1, y1), (mid, y1), (mid, ky), (x2, ky)], fill="#9aa4b2", width=2)
+        x0, y0 = n.x, ny
+        d.rounded_rectangle([x0, y0, x0 + n.w, y0 + n.h], radius=8, fill=n.bg, outline=n.outline, width=1)
         label = n.label
         b = n.font.getbbox(label)
         d.text((x0 + 11, y0 + (n.h - (b[3] - b[1])) / 2 - b[1]), label, font=n.font, fill=n.fg)
@@ -145,6 +158,8 @@ def xmind(node, sheet_title, path):
     def topic(n):
         t = {"id": "n" + hashlib.md5((n.t + str(n.depth) + str(id(n))).encode()).hexdigest()[:10],
              "class": "topic", "title": n.t}
+        if n.hot:
+            t["markers"] = [{"markerId": "markerId-redFlag"}]
         if n.kids:
             t["children"] = {"attached": [topic(k) for k in n.kids]}
         return t
@@ -164,11 +179,14 @@ def xmind(node, sheet_title, path):
 def html_map(nodes_data, path, title):
     def li(items):
         s = []
-        for label, kids in items:
+        for item in items:
+            label, kids = item[0], item[1]
+            hot = item[2] if len(item) > 2 else False
             if kids:
-                s.append("<li><details open><summary>%s</summary><ul>%s</ul></details></li>" % (label, li(kids)))
+                s.append("<li><details open><summary%s>%s</summary><ul>%s</ul></details></li>"
+                         % (' class="crime"' if hot else "", label, li(kids)))
             else:
-                s.append("<li><span>%s</span></li>" % label)
+                s.append("<li><span%s>%s</span></li>" % (' class="crime"' if hot else "", label))
         return "".join(s)
 
     body = li(nodes_data)
@@ -187,13 +205,17 @@ summary{cursor:pointer;font-weight:600;outline:none}
 summary:hover{color:#1f4e79}
 span{display:inline-block;padding:1px 8px;border-radius:6px;background:#fff;border:1px solid #d0d7de;margin:1px 0}
 span:hover{border-color:#1f4e79;background:#eef4fb}
+span.crime,summary.crime{background:#fde8e8;border-color:#e08a82;color:#b42318}
+summary.crime{background:none;border:none;display:inline-block;padding:1px 8px;border-radius:6px}
+summary.crime:hover{color:#b42318}
 .root>ul>li>details>summary,.root>ul>li>span{font-size:16px;color:#1f4e79}
 small{opacity:.65;font-weight:400}
+.legend{display:inline-block;margin-left:12px;font-size:12px;padding:2px 10px;border-radius:999px;background:#fde8e8;color:#ffbdb7;border:1px solid #e08a82}
 .tools{padding:10px 22px;background:#eef4fb;font-size:13px}
 .tools a{color:#1f4e79;margin-right:14px}
 @media print{.tools{display:none}details{open:true}}
 </style></head><body>
-<header><h1>%(title)s</h1><div style="opacity:.85;font-size:12px;margin-top:4px">《人间防骗指南》思维导图源文件 · 点标题可折叠/展开</div></header>
+<header><h1>%(title)s<span class="legend">红色 = 涉刑风险</span></h1><div style="opacity:.85;font-size:12px;margin-top:4px">《人间防骗指南》思维导图源文件 · 点标题可折叠/展开</div></header>
 <div class="tools">快捷：<a href="#" onclick="document.querySelectorAll('details').forEach(d=>d.open=true);return false">全部展开</a>
 <a href="#" onclick="document.querySelectorAll('details').forEach(d=>d.open=false);return false">全部折叠</a>
 <a href="javascript:print()">打印 / 导出 PDF</a></div>
@@ -219,40 +241,46 @@ made = []
 for fname, cat in CHAPTERS:
     arts = [a for a in ARTS if a["cat"] == cat]
     arts.sort(key=lambda a: a["id"])
-    root = N("%s（%d 篇）" % (cat, len(arts)), 0)
+    n_crime_ch = sum(1 for a in arts if "刑责风险" in a.get("risks", []))
+    root = N("%s（%d 篇 · 涉刑 %d）" % (cat, len(arts), n_crime_ch), 0)
     for a in arts:
-        art_node = N("%s %s" % (a["icon"], a["title"]), 1)
+        hot = "刑责风险" in a.get("risks", [])
+        art_node = N("%s %s" % (a["icon"], a["title"]), 1, hot=hot)
         for p in a["points"]:
-            art_node.kids.append(N(p, 2))
+            art_node.kids.append(N(p, 2, hot=hot))
         root.kids.append(art_node)
     png = os.path.join(OUT, fname + ".png")
     xm = os.path.join(OUT, fname + ".xmind")
-    draw_tree(root, png, "《人间防骗指南》· %s（%d 篇）" % (cat, len(arts)))
+    draw_tree(root, png, "《人间防骗指南》· %s（%d 篇 · 涉刑 %d）" % (cat, len(arts), n_crime_ch),
+              legend=n_crime_ch > 0)
     xmind(root, cat, xm)
     # HTML 源
-    html_data = [(("%s <small>（%d 篇）</small>" % (cat, len(arts))), [])]  # placeholder replaced below
     html_data = []
     for a in arts:
-        html_data.append(("%s %s" % (a["icon"], a["title"]), [(p, []) for p in a["points"]]))
-    html_map([(cat, html_data)], os.path.join(OUT, fname + ".html"), "%s · %d 篇" % (cat, len(arts)))
+        hot = "刑责风险" in a.get("risks", [])
+        html_data.append(("%s %s" % (a["icon"], a["title"]), [(p, []) for p in a["points"]], hot))
+    html_map([(cat, html_data)], os.path.join(OUT, fname + ".html"),
+             "%s · %d 篇 · 涉刑 %d" % (cat, len(arts), n_crime_ch))
     made.append((fname, cat, len(arts)))
 
 # ---------- 00 总览 ----------
 n_crime = sum(1 for a in ARTS if "刑责风险" in a.get("risks", []))
-root = N("《人间防骗指南》%d 篇真实骗局拆解" % len(ARTS), 0)
-cats_branch = N("🗂 16 类骗局分类", 1)
+root = N("《人间防骗指南》%d 篇真实骗局拆解（涉刑 %d 篇标红）" % (len(ARTS), n_crime), 0)
+cats_branch = N("🗂 16 类骗局分类（红色=涉刑风险）", 1)
 for fname, cat in CHAPTERS:
     arts = [a for a in ARTS if a["cat"] == cat]
-    node = N("%s · %d 篇" % (cat, len(arts)), 2)
-    # 每类取前 3 个代表文章做三级节点
+    n_crime_c = sum(1 for a in arts if "刑责风险" in a.get("risks", []))
+    node = N("%s · %d 篇（涉刑 %d）" % (cat, len(arts), n_crime_c), 2)
+    # 每类取前 3 个代表文章做三级节点（涉刑的标红）
     for a in sorted(arts, key=lambda x: x["id"])[:3]:
-        node.kids.append(N("%s %s" % (a["icon"], trunc(a["title"], 20)), 3))
+        hot = "刑责风险" in a.get("risks", [])
+        node.kids.append(N("%s %s" % (a["icon"], trunc(a["title"], 20)), 3, hot=hot))
     if len(arts) > 3:
-        node.kids.append(N("…等共 %d 篇" % len(arts), 3))
+        node.kids.append(N("…等共 %d 篇（其中涉刑 %d 篇）" % (len(arts), n_crime_c), 3, hot=n_crime_c > 0))
     cats_branch.kids.append(node)
 stats = N("📊 全书数据", 1)
 stats.kids = [
-    N("涉刑风险 %d 篇（碰了不只是丢钱）" % n_crime, 2),
+    N("涉刑风险 %d 篇（碰了不只是丢钱）" % n_crime, 2, hot=True),
     N("权威判例挂载 1466 条次（法院/检察/公安/央媒）", 2),
     N("45 道自查清单（是/否题，按优先级排序）", 2),
     N("12 局防骗小游戏（选错就扣钱，局中不讲对错）", 2),
@@ -266,17 +294,24 @@ use.kids = [
     N("在线：https://qerssd.github.io/HowToAvoidScams/", 2),
 ]
 root.kids = [cats_branch, stats, use]
-draw_tree(root, os.path.join(OUT, "00-整体结构.png"), "《人间防骗指南》· 全书整体结构")
+draw_tree(root, os.path.join(OUT, "00-整体结构.png"), "《人间防骗指南》· 全书整体结构（红色=涉刑风险 %d 篇）" % n_crime)
 xmind(root, "全书整体结构", os.path.join(OUT, "00-整体结构.xmind"))
+cat_html = []
+for fname, cat in CHAPTERS:
+    arts = [x for x in ARTS if x["cat"] == cat]
+    n_crime_c = sum(1 for y in arts if "刑责风险" in y.get("risks", []))
+    kids = []
+    for a in sorted(arts, key=lambda x: x["id"]):
+        hot = "刑责风险" in a.get("risks", [])
+        kids.append(("%s %s" % (a["icon"], trunc(a["title"], 24)), [(p, []) for p in a["points"]], hot))
+    cat_html.append(("%s · %d 篇（涉刑 %d）" % (cat, len(arts), n_crime_c), kids, n_crime_c > 0))
 html_data = [
-    ("🗂 16 类骗局分类", [(("%s · %d 篇" % (cat, len([a for a in ARTS if a["cat"] == cat]))),
-        [("%s %s" % (a["icon"], trunc(a["title"], 24)), [(p, []) for p in a["points"]])
-         for a in sorted([x for x in ARTS if x["cat"] == cat], key=lambda x: x["id"])])
-     for fname, cat in CHAPTERS]),
-    ("📊 全书数据", [(t, []) for t in [st.t for st in stats.kids]]),
-    ("🎯 怎么用", [(t, []) for t in [st.t for st in use.kids]]),
+    ("🗂 16 类骗局分类", cat_html),
+    ("📊 全书数据", [(t.t, [], t.hot) for t in stats.kids]),
+    ("🎯 怎么用", [(t.t, []) for t in use.kids]),
 ]
-html_map(html_data, os.path.join(OUT, "00-整体结构.html"), "全书整体结构")
+html_map(html_data, os.path.join(OUT, "00-整体结构.html"),
+         "全书整体结构 · 涉刑 %d 篇" % n_crime)
 
 # ---------- index.html 总入口 ----------
 rows = []
