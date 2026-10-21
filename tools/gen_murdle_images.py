@@ -740,8 +740,8 @@ def tech_spec(path):
     left_mid(d, 116, 646, "唯一数据源", f_bold(28), ACC)
     para(d, 116, 690,
          "tools/articles.json（371 篇 · 16 类）+ tools/news.json（判例挂载）\n"
-         "每关的嫌疑人 / 剧本 / 目标画像 / 收场结局，全部从文章字段抽取；"
-         "线索手工编剧，入库前跑穷举校验「解唯一且线索充分」。",
+         "每关的 9 个角色、9 个场景分区和全部线索，都从这一篇骗局里抽取改写；"
+         "入库前跑穷举校验，断言「解有且只有一个」。",
          f_reg(23), 1360, 44, TXT2)
     im.save(path, quality=95)
     return path
@@ -789,16 +789,32 @@ def main():
         print("  ✓", file)
 
     print("生成《识骗迷局》配图 →", OUT)
-    add("封面 · 主视觉", "01-封面-主视觉.png", "3:4 竖版 1080×1440 · 逻辑格主视觉", cover_main)
-    add("封面 · 烧脑向", "02-封面-烧脑.png", "3:4 竖版 · 8 条线索只有一个答案", cover_brain)
-    add("封面 · 给爸妈", "03-封面-给爸妈.png", "3:4 竖版 · 暖色家庭口吻", cover_parents)
-    add("界面 · 关卡页", "04-界面-关卡页.png", "16:10 · 案情 + 线索卡 + 逻辑格", ui_puzzle_page)
-    add("界面 · 指认面板", "05-界面-指认结算.png", "16:10 · 四选一同构 + 三星结算", ui_accuse_page)
-    add("界面 · 复盘页", "06-界面-复盘页.png", "16:10 · 推导链 + 骗术解析 + 判例", ui_review_page)
-    add("玩法流程", "07-玩法流程.png", "16:9 · 一局五步", flow_chart)
-    add("样关示例", "08-样关-退款来电.png", "完整可解 3×3 入门局", sample_case)
-    add("关卡体系", "09-关卡体系.png", "5 章 40 关难度与机制表", chapter_map)
-    add("形态与数据源", "10-形态与数据源.png", "与现有 game/ 的关系", tech_spec)
+
+    # v1 玩法（4 轴逻辑格）已被推翻，04-09 已归档到 _v1-旧玩法/，不再生成
+
+    # 以下由 tools/prep_chars.py、tools/gen_murdoku_proto.py 生成，这里只登记
+    extra = [
+        ("角色棋子 · 四身份", "12-角色棋子.png",
+         "骗子 / 受害者 / 警察 / 路人 ｜ 512 透明底 PNG"),
+        ("样关 · 9×9 网格", "11-样关-9x9网格.png",
+         "9 人摆进 81 格 ｜ 唯一解已校验"),
+    ]
+    for item in extra:
+        if os.path.exists(os.path.join(OUT, item[1])):
+            made.append(item)
+            print("  · 登记", item[1])
+
+    add("形态与数据源", "10-形态与数据源.png", "单文件形态 · 数据源 · 与现有 game/ 的关系", tech_spec)
+
+    # 封面仍按 v1 主视觉（4×4 逻辑格），玩法定稿后需重出，先标注保留
+    for name, file, desc in [
+        ("封面 · 主视觉（v1）", "01-封面-主视觉.png", "3:4 竖版 · 旧版逻辑格主视觉，待重出"),
+        ("封面 · 烧脑（v1）", "02-封面-烧脑.png", "3:4 竖版 · 旧版，待重出"),
+        ("封面 · 给爸妈（v1）", "03-封面-给爸妈.png", "3:4 竖版 · 旧版，待重出"),
+    ]:
+        if os.path.exists(os.path.join(OUT, file)):
+            made.append((name, file, desc))
+            print("  · 登记", file)
 
     write_index(made, os.path.join(OUT, "index.html"))
     print("完成，共 %d 张 + index.html" % len(made))
