@@ -69,7 +69,13 @@ button{font-family:inherit;cursor:pointer}
 @media (max-width:900px){.play-grid{grid-template-columns:1fr}:root{--cell:38px}}
 @media (max-width:430px){:root{--cell:calc((100vw - 96px)/9)}}
 
-.boardbox{border:1px solid var(--line);background:var(--bg2);border-radius:14px;padding:12px}
+.boardbox{position:relative;overflow:hidden;border:1px solid var(--line);
+  border-radius:14px;padding:12px}
+.boardbox>.scene{position:absolute;left:-6%;top:-6%;width:112%;height:112%;
+  object-fit:cover;filter:blur(11px) brightness(.45) saturate(.9);pointer-events:none}
+.boardbox>.sceneveil{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(rgba(11,17,32,.58),rgba(11,17,32,.78))}
+.boardbox>.board,.boardbox>.roster{position:relative;z-index:1}
 .board{display:flex;gap:4px;justify-content:center}
 .rowbar{display:grid;grid-template-rows:repeat(9,var(--cell));gap:var(--gap);padding-top:20px}
 .rowbar div,.colbar div{display:flex;align-items:center;justify-content:center;
@@ -77,15 +83,21 @@ button{font-family:inherit;cursor:pointer}
 .colbar{display:grid;grid-template-columns:repeat(9,var(--cell));gap:var(--gap);height:20px}
 .grid9{display:grid;grid-template-columns:repeat(9,var(--cell));
   grid-template-rows:repeat(9,var(--cell));gap:var(--gap)}
-.cell{position:relative;background:#141f36;border-radius:5px;display:flex;
-  align-items:center;justify-content:center;transition:background .12s,box-shadow .12s}
-.cell.zb{background:#182742}
-.cell:hover{background:#22324f}
-.cell.conflict{animation:shake .3s;box-shadow:inset 0 0 0 2px var(--scam)}
-.cell.hl{background:#22365a}
+.cell{position:relative;background:#141f36;border-radius:5px;overflow:hidden;display:flex;
+  align-items:center;justify-content:center;transition:box-shadow .12s}
+/* 每格背景 = 该关现场插画的一个区块（img 放大 3 倍，同宫九格拼回完整画面） */
+.cell .cbg,.cell .veil{position:absolute;inset:0;pointer-events:none}
+.cell .cbg{width:300%;height:300%;max-width:none;object-fit:fill;opacity:.92}
+.cell .veil{background:rgba(11,17,32,.48);transition:background .12s}
+.cell:hover .veil{background:rgba(11,17,32,.30)}
+.cell.hl{box-shadow:inset 0 0 0 1px #3f9d6a}
+.cell.hl .veil{background:rgba(23,58,42,.26)}
 .cell.locked{cursor:not-allowed}
+.cell.locked .veil{background:rgba(11,17,32,.74)}
+.cell.conflict{animation:shake .3s;box-shadow:inset 0 0 0 2px var(--scam)}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.cell img{width:82%;height:82%;object-fit:contain;pointer-events:none}
+.cell img{position:relative;z-index:1;width:82%;height:82%;object-fit:contain;pointer-events:none;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.85))}
 .cell .nm{position:absolute;bottom:1px;left:0;right:0;text-align:center;
   font-size:9px;color:#0b1120;background:rgba(232,238,248,.72);border-radius:0 0 5px 5px;
   pointer-events:none;overflow:hidden;white-space:nowrap}
@@ -176,6 +188,7 @@ ul.pts{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.85;color:#d
 <script>
 const DATA = /*__DATA__*/null/*__DATA__*/;
 const CHARS = /*__CHARS__*/null/*__CHARS__*/;
+const BGS = /*__BGS__*/null/*__BGS__*/;
 const SAVE_KEY = "shimian.save.v1";
 const CAMPCOLOR = {"骗":"var(--scam)","受害":"var(--victim)","警":"var(--police)","路":"var(--road)"};
 
@@ -277,6 +290,8 @@ function startLevel(lv){
   document.getElementById("pageHome").classList.add("hidden");
   document.getElementById("pagePlay").classList.remove("hidden");
   document.getElementById("pagePlay").innerHTML=playHTML(lv);
+  const si=document.getElementById("sceneImg");
+  if(si) si.src=BGS[lv.id]||"";
   bindPlay();
   renderGrid(); renderRoster(); renderClues();
 }
@@ -289,7 +304,9 @@ function playHTML(lv){
     '<div class="scene">现场：'+lv.scene+'</div>'+
   '</div>'+
   '<div class="play-grid">'+
-    '<div class="boardbox">'+
+    '<div class="boardbox" id="boardbox">'+
+      '<img class="scene" id="sceneImg" alt="">'+
+      '<div class="sceneveil"></div>'+
       '<div class="board">'+
         '<div class="rowbar">'+Array.from({length:9},(_,i)=>
           '<div title="'+(i+1)+' 排：'+lv.rows[i]+'">'+(i+1)+'</div>').join('')+'</div>'+
@@ -349,6 +366,13 @@ function renderGrid(){
     const d=document.createElement("div");
     d.className="cell"+(zoneOf(r,c)%2?" zb":"");
     d.dataset.r=r; d.dataset.c=c;
+    // 现场图区块：同一 3x3 宫里的九格拼起来正好是这幅画的对应区块
+    const bg=document.createElement("img"); bg.className="cbg"; bg.alt="";
+    bg.src=BGS[CUR.id]||"";
+    bg.style.marginLeft=(-100*(c%3))+"%";
+    bg.style.marginTop=(-100*(r%3))+"%";
+    d.appendChild(bg);
+    const veil=document.createElement("div"); veil.className="veil"; d.appendChild(veil);
     const occupant=Object.keys(placed).find(n=>placed[n].r===r&&placed[n].c===c);
     if(occupant){
       const role=CUR.roles.find(x=>x.name===occupant);

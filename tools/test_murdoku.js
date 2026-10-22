@@ -51,7 +51,7 @@ setTimeout(() => {
     qa("#people .p").find(p => p.querySelector(".n").textContent === freeName).click();
     const blockedCell = qa("#grid .cell").find(c => +c.dataset.r === given.r && +c.dataset.c !== given.c);
     blockedCell.click();
-    ok(!blockedCell.querySelector("img"), "同排已有人的格子拒绝落子");
+    ok(!blockedCell.querySelector(".nm"), "同排已有人的格子拒绝落子");
 
     function esc() { d.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true })); }
     function findPerson(n) { return qa("#people .p").find(p => p.querySelector(".n").textContent === n); }

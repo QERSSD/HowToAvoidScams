@@ -107,6 +107,20 @@ def load_chars(size=224):
     return out
 
 
+def load_bgs():
+    """每关一张现场插画（tools/prep_bg.py 压好的 288x288 雪碧图 data URI）。
+
+    3x3 切开后正好对应九宫格区块：同一宫内的九格拼回这幅画的对应区块。
+    """
+    for p in (os.path.join(ROOT, "game", "murdoku-bgs.json"),
+              os.path.join(ROOT, "game-adaptations", "识骗迷局", "art", "bgs.json")):
+        if os.path.exists(p):
+            with io.open(p, encoding="utf-8") as f:
+                return json.load(f)
+    print("  提示：没找到 murdoku-bgs.json，网格背景留空（先跑 tools/prep_bg.py）")
+    return {}
+
+
 def main():
     if not os.path.isdir(OUT_DIR):
         os.makedirs(OUT_DIR)
@@ -132,6 +146,8 @@ def main():
     html = html.replace("/*__DATA__*/null/*__DATA__*/", payload)
     html = html.replace("/*__CHARS__*/null/*__CHARS__*/",
                         json.dumps(load_chars(), ensure_ascii=False, separators=(",", ":")))
+    html = html.replace("/*__BGS__*/null/*__BGS__*/",
+                        json.dumps(load_bgs(), ensure_ascii=False, separators=(",", ":")))
     out_html = os.path.join(OUT_DIR, "识骗迷局.html")
     io.open(out_html, "w", encoding="utf-8").write(html)
     print("单文件：%s（%.0f KB）" % (out_html, os.path.getsize(out_html) / 1024))

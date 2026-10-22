@@ -85,7 +85,7 @@ def check_html(path, data):
     print("\n== 单文件 ==")
     html = io.open(path, encoding="utf-8").read()
     print("  体积 %.0f KB" % (os.path.getsize(path) / 1024))
-    if "__DATA__" in html or "__CHARS__" in html:
+    if "__DATA__" in html or "__CHARS__" in html or "__BGS__" in html:
         problems.append("HTML 里还有未替换的占位符")
     m = re.search(r"const DATA = (\{.*?\});\nconst CHARS", html, re.S)
     if not m:
@@ -103,6 +103,19 @@ def check_html(path, data):
         key = '"%s":"data:image/png;base64,' % camp
         if key not in m.group(1) and key not in html:
             problems.append("缺少棋子图：%s" % camp)
+    # 每关都要有现场背景图
+    mb = re.search(r"const BGS = (\{.*?\});", html, re.S)
+    if not mb:
+        problems.append("找不到内联的场景背景图 BGS")
+    else:
+        try:
+            bgs = json.loads(mb.group(1))
+        except Exception as e:
+            problems.append("BGS 解析失败：%s" % e)
+            bgs = {}
+        for lv in data["levels"]:
+            if not bgs.get(lv["id"], "").startswith("data:image/jpeg;base64,"):
+                problems.append("关卡 %s 缺少现场背景图" % lv["id"])
     if html.count("<script>") != 1 or html.count("</script>") != 1:
         problems.append("script 标签数量异常")
 
