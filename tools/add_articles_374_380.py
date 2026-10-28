@@ -393,8 +393,8 @@ def build_raw(a):
 
 def main():
     arts = json.load(io.open(ART, encoding="utf-8"))
-    have = {a["id"] for a in arts}
-    start = max(have) if have else 0
+    existing = {a["title"] for a in arts}
+    start = max((a["id"] for a in arts), default=0)
     appended = 0
     for i, a in enumerate(ENTRIES):
         a = dict(a)
@@ -416,7 +416,7 @@ def main():
             "n": a["n"],
             "body": a["body"],
         }
-        if rec["id"] not in have:
+        if a["title"] not in existing:
             arts.append(rec)
             print("追加 %d《%s》 n=%s" % (rec["id"], rec["title"][:36], rec["n"]))
             appended += 1
@@ -439,3 +439,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # 入库后同步重建 book / 站点HTML / README / docs
+    import subprocess as _sp, sys as _sys, os as _os
+    _h = _os.path.dirname(_os.path.abspath(__file__))
+    _sp.run([_sys.executable, _os.path.join(_h, "rebuild_site.py")], check=False)
